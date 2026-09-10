@@ -1,38 +1,57 @@
 /* ---------- alphabet of flowers (SVG) ---------- */
-function flowerSVG(stemH, petalFill, centerFill) {
-    return `<svg width="58" height="${stemH + 70}" viewBox="0 0 58 ${stemH + 70}" fill="none" xmlns="http://www.w3.org/2000/svg">
+function flowerSVG(stemH, petalFill, centerFill, centerHi, id) {
+    const rot = (a) => `transform="rotate(${a} 32 40)"`;
+    return `<svg width="64" height="${stemH + 84}" viewBox="0 0 64 ${stemH + 84}" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+            <linearGradient id="sh${id}" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0" stop-color="#ffffff" stop-opacity="0.6"/>
+                <stop offset="1" stop-color="#ffffff" stop-opacity="0"/>
+            </linearGradient>
+        </defs>
         <g class="bloom">
             <g fill="${petalFill}">
-                <ellipse cx="29" cy="16" rx="9" ry="18"/>
-                <ellipse cx="29" cy="16" rx="9" ry="18" transform="rotate(60 29 34)"/>
-                <ellipse cx="29" cy="16" rx="9" ry="18" transform="rotate(120 29 34)"/>
-                <ellipse cx="29" cy="16" rx="9" ry="18" transform="rotate(180 29 34)"/>
-                <ellipse cx="29" cy="16" rx="9" ry="18" transform="rotate(240 29 34)"/>
-                <ellipse cx="29" cy="16" rx="9" ry="18" transform="rotate(300 29 34)"/>
+                <ellipse cx="32" cy="18" rx="10" ry="19"/>
+                <ellipse cx="32" cy="18" rx="10" ry="19" ${rot(60)}/>
+                <ellipse cx="32" cy="18" rx="10" ry="19" ${rot(120)}/>
+                <ellipse cx="32" cy="18" rx="10" ry="19" ${rot(180)}/>
+                <ellipse cx="32" cy="18" rx="10" ry="19" ${rot(240)}/>
+                <ellipse cx="32" cy="18" rx="10" ry="19" ${rot(300)}/>
             </g>
-            <circle cx="29" cy="34" r="7" fill="${centerFill}"/>
+            <g fill="url(#sh${id})">
+                <ellipse cx="32" cy="15" rx="6.5" ry="14"/>
+                <ellipse cx="32" cy="15" rx="6.5" ry="14" ${rot(60)}/>
+                <ellipse cx="32" cy="15" rx="6.5" ry="14" ${rot(120)}/>
+                <ellipse cx="32" cy="15" rx="6.5" ry="14" ${rot(180)}/>
+                <ellipse cx="32" cy="15" rx="6.5" ry="14" ${rot(240)}/>
+                <ellipse cx="32" cy="15" rx="6.5" ry="14" ${rot(300)}/>
+            </g>
+            <circle cx="32" cy="40" r="9.5" fill="${centerFill}"/>
+            <circle cx="32" cy="40" r="6" fill="${centerHi}"/>
+            <circle cx="30.2" cy="37.8" r="2.2" fill="#ffffff" opacity="0.9"/>
         </g>
-        <path class="stem" d="M29 66 V${stemH + 40}"/>
-        <ellipse class="leaf" cx="27" cy="${stemH * 0.55 + 40}" rx="9" ry="4" transform="rotate(-35 27 ${stemH * 0.55 + 40})"/>
-        <ellipse class="leaf" cx="33" cy="${stemH * 0.75 + 40}" rx="9" ry="4" transform="rotate(35 33 ${stemH * 0.75 + 40})"/>
+        <path class="stem" d="M32 78 V${stemH + 42}"/>
+        <ellipse class="leaf" cx="30" cy="${stemH * 0.5 + 42}" rx="10" ry="4.4" transform="rotate(-32 30 ${stemH * 0.5 + 42})"/>
+        <ellipse class="leaf" cx="36" cy="${stemH * 0.72 + 42}" rx="10" ry="4.4" transform="rotate(32 36 ${stemH * 0.72 + 42})"/>
     </svg>`;
 }
 
 function buildBouquet() {
     const wrap = document.getElementById('bouquet');
     const layout = [
-        { left: '50%', h: 150, petal: '#d9e9f5', center: '#f2e06b', sway: 6.2, breathe: 4.8, z: 1 },
-        { left: '40%', h: 185, petal: '#bdd7ea', center: '#e8d15c', sway: 7.1, breathe: 5.4, z: 3 },
-        { left: '60%', h: 180, petal: '#a8c9e1', center: '#f2e06b', sway: 6.6, breathe: 5.8, z: 3 },
-        { left: '45%', h: 215, petal: '#cfe3f1', center: '#e8d15c', sway: 5.4, breathe: 4.4, z: 4 },
-        { left: '55%', h: 210, petal: '#bfdaee', center: '#f2e06b', sway: 5.8, breathe: 5.0, z: 4 },
-        { left: '50%', h: 235, petal: '#d9e9f5', center: '#e8d15c', sway: 6.0, breathe: 4.6, z: 5 },
+        { left: '50%', h: 150, petal: '#dcf0fb', c1: '#f4e6bd', c2: '#e7c98c', sway: 6.2, breathe: 4.8, z: 1 },
+        { left: '40%', h: 185, petal: '#c6e0f2', c1: '#f4e6bd', c2: '#e7c98c', sway: 7.1, breathe: 5.4, z: 2 },
+        { left: '60%', h: 180, petal: '#b3d5ec', c1: '#f3d7e3', c2: '#e2a8c4', sway: 6.6, breathe: 5.8, z: 2 },
+        { left: '45%', h: 215, petal: '#d7ebfa', c1: '#f4e6bd', c2: '#e7c98c', sway: 5.4, breathe: 4.4, z: 3 },
+        { left: '55%', h: 210, petal: '#bdd9ef', c1: '#f3d7e3', c2: '#e2a8c4', sway: 5.8, breathe: 5.0, z: 3 },
+        { left: '50%', h: 235, petal: '#dcecf7', c1: '#f4e6bd', c2: '#e7c98c', sway: 6.0, breathe: 4.6, z: 4 },
+        { left: '31%', h: 130, petal: '#e4f2fb', c1: '#f3d7e3', c2: '#e2a8c4', sway: 7.6, breathe: 6.2, z: 1 },
+        { left: '69%', h: 140, petal: '#e4f2fb', c1: '#f4e6bd', c2: '#e7c98c', sway: 7.8, breathe: 6.4, z: 1 },
     ];
 
     layout.forEach((f, i) => {
         const el = document.createElement('div');
         el.className = 'flower';
-        el.innerHTML = flowerSVG(f.h, f.petal, f.center);
+        el.innerHTML = flowerSVG(f.h, f.petal, f.c1, f.c2, i);
         el.style.left = f.left;
         el.style.zIndex = f.z;
         el.style.setProperty('--sway', f.sway + 's');
@@ -42,14 +61,30 @@ function buildBouquet() {
     });
 
     wrap.insertAdjacentHTML('beforeend', `<div class="bouquet-wrap">
-        <svg width="170" height="130" viewBox="0 0 170 130" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M85 130 V40 M60 118 Q85 96 110 118 M52 90 Q85 60 118 90" stroke="#8fae9a" stroke-width="3" fill="none"/>
-            <path d="M30 66 L85 108 L82 72 L30 40 Z" fill="#7d9b84"/>
-            <path d="M140 66 L85 108 L88 72 L140 40 Z" fill="#7d9b84"/>
-            <path d="M42 130 C42 118 61 112 85 112 C109 112 128 118 128 130 L128 132 L42 132 Z" fill="#a3c7dd"/>
-            <path d="M52 124 C52 116 66 112 85 112 C104 112 118 116 118 124" stroke="#8fb8d4" stroke-width="2" fill="none"/>
+        <svg width="180" height="140" viewBox="0 0 180 140" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M34 70 L90 112 L86 76 L34 42 Z" fill="#8fb8d4"/>
+            <path d="M146 70 L90 112 L94 76 L146 42 Z" fill="#8fb8d4"/>
+            <path d="M44 140 C44 126 64 118 90 118 C116 118 136 126 136 140 L136 142 L44 142 Z" fill="#a7c8de"/>
+            <path d="M54 134 C54 125 68 120 90 120 C112 120 126 125 126 134" stroke="#8fb8d4" stroke-width="2" fill="none"/>
+            <path d="M52 128 L90 112 L128 128" stroke="#efd8a7" stroke-width="7" fill="none" stroke-linecap="round"/>
+            <g fill="#efd8a7">
+                <ellipse cx="74" cy="120" rx="16" ry="9" transform="rotate(-20 74 120)"/>
+                <ellipse cx="106" cy="120" rx="16" ry="9" transform="rotate(20 106 120)"/>
+            </g>
+            <circle cx="90" cy="120" r="6" fill="#e7c98c"/>
         </svg>
     </div>`);
+
+    const sparks = [
+        { x: '26%', y: '4%', s: 11, d: 0 },
+        { x: '68%', y: '8%', s: 8, d: 1.1 },
+        { x: '50%', y: '-2%', s: 9, d: 2.2 },
+        { x: '35%', y: '26%', s: 7, d: 0.6 },
+        { x: '64%', y: '24%', s: 7, d: 1.7 },
+    ];
+    sparks.forEach(s => {
+        wrap.insertAdjacentHTML('beforeend', `<svg class="spark" style="left:${s.x};top:${s.y};animation-delay:${s.d}s" width="${s.s}" height="${s.s}" viewBox="0 0 24 24" fill="#ffffff"><path d="M12 2 C13 8 16 11 22 12 C16 13 13 16 12 22 C11 16 8 13 2 12 C8 11 11 8 12 2 Z"/></svg>`);
+    });
 }
 
 /* ---------- floating petals & hearts ---------- */
@@ -84,6 +119,30 @@ function spawnFall() {
         setTimeout(() => el.remove(), 16000);
     }, 450);
 }
+
+/* ---------- flower rain on double-click of the name ---------- */
+function flowerRain() {
+    const emojis = ['🌸', '🌼', '🌷', '🌺', '🌻', '🏵️', '🌹', '💐'];
+    for (let b = 0; b < 3; b++) {
+        setTimeout(() => {
+            for (let i = 0; i < 42; i++) {
+                const el = document.createElement('div');
+                el.className = 'fall frain';
+                const size = 16 + Math.random() * 16;
+                el.innerHTML = `<span style="font-size:${size}px;">${emojis[Math.floor(Math.random() * emojis.length)]}</span>`;
+                el.style.left = Math.random() * 100 + 'vw';
+                el.style.animationDuration = (2 + Math.random() * 1.6) + 's';
+                document.body.appendChild(el);
+                setTimeout(() => el.remove(), 5000);
+            }
+        }, b * 650);
+    }
+}
+
+document.addEventListener('dblclick', (e) => {
+    const hit = e.target.closest('.title, .foot p, .photo-caption');
+    if (hit && /rain/i.test(hit.textContent)) flowerRain();
+});
 
 /* ---------- music (music-box style, WebAudio) ---------- */
 const Music = (() => {
