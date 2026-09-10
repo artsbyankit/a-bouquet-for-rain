@@ -67,7 +67,8 @@ function spawnFall() {
         } else {
             const hearts = ['💙', '🩵', '🤍', '💙', '🩵', '🤍'];
             if (Math.random() < 0.001) {
-                el.innerHTML = `<span style="font-size:${size}px;opacity:.95;">💎</span>`;
+                el.innerHTML = `<span class="diamond">💎</span>`;
+                el.style.animationDelay = '1s';
             } else if (Math.random() < 0.01) {
                 const s = ['💖', '💝'][Math.floor(Math.random() * 2)];
                 el.innerHTML = `<span style="font-size:${size}px;opacity:.9;">${s}</span>`;
