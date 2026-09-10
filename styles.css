@@ -420,8 +420,62 @@ body {
 }
 
 @media (max-width: 480px) {
-    .stage { padding-top: 6vh; }
-    .bouquet { height: 290px; }
-    .flower { bottom: 70px; }
-    .message { padding: 32px 24px; }
+    html {
+        -webkit-text-size-adjust: 100%;
+    }
+
+    body {
+        -webkit-tap-highlight-color: transparent;
+    }
+
+    .stage {
+        padding: 6vh 16px 48px;
+    }
+
+    .title {
+        font-size: clamp(42px, 14vw, 62px);
+    }
+
+    .eyebrow {
+        letter-spacing: 0.24em;
+        font-size: 11px;
+    }
+
+    .from {
+        font-size: 15px;
+    }
+
+    .bouquet {
+        height: 290px;
+        margin-bottom: 36px;
+    }
+
+    .flower {
+        bottom: 66px;
+    }
+
+    .flower .bloom {
+        animation: none;
+    }
+
+    .message {
+        padding: 30px 20px;
+        margin-bottom: 36px;
+        border-radius: 18px;
+    }
+
+    .photo-spot {
+        margin-bottom: 40px;
+    }
+
+    .photo-caption {
+        margin-top: 12px;
+    }
+
+    .music-toggle {
+        top: 12px;
+        right: 12px;
+        width: 42px;
+        height: 42px;
+    }
 }
