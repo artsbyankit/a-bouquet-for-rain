@@ -1,0 +1,260 @@
+:root {
+    --powder: #b8d6e8;
+    --powder-2: #a3c7dd;
+    --powder-3: #8fb8d4;
+    --powder-deep: #6f9fc4;
+    --cream: #fdfbf7;
+    --ink-dark: #2c3e50;
+    --ink-soft: #5a7084;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+html {
+    scroll-behavior: smooth;
+}
+
+body {
+    font-family: "Inter", system-ui, sans-serif;
+    background: linear-gradient(180deg, #dceaf3 0%, var(--powder) 40%, var(--powder-2) 100%);
+    color: var(--ink-dark);
+    min-height: 100vh;
+    overflow-x: hidden;
+}
+
+.stage {
+    max-width: 720px;
+    margin: 0 auto;
+    padding: 48px 24px 60px;
+    text-align: center;
+    position: relative;
+    z-index: 2;
+}
+
+/* ------- intro ------- */
+.intro {
+    margin-bottom: 40px;
+}
+
+.eyebrow {
+    font-size: 13px;
+    letter-spacing: 0.35em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+    opacity: 0.85;
+    margin-bottom: 14px;
+}
+
+.title {
+    font-family: "Cormorant Garamond", serif;
+    font-weight: 500;
+    font-size: clamp(52px, 10vw, 88px);
+    line-height: 1.05;
+    color: var(--ink-dark);
+}
+
+.title em {
+    font-style: italic;
+    background: linear-gradient(120deg, var(--powder-deep), #86b3cf 70%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.from {
+    margin-top: 14px;
+    font-size: 17px;
+    font-weight: 300;
+    color: var(--ink-soft);
+}
+
+.from .ketty {
+    font-family: "Cormorant Garamond", serif;
+    font-size: 21px;
+    font-style: italic;
+    color: var(--ink-dark);
+}
+
+/* ------- bouquet ------- */
+.bouquet {
+    height: 340px;
+    position: relative;
+    margin-bottom: 40px;
+    filter: drop-shadow(0 24px 28px rgba(60, 100, 130, 0.35));
+}
+
+.flower {
+    position: absolute;
+    bottom: 82px;
+    transform-origin: 50% 100%;
+    animation: sway var(--sway, 6s) ease-in-out infinite alternate;
+}
+
+.flower .stem {
+    stroke: #8fae9a;
+    stroke-width: 3;
+    fill: none;
+}
+
+.flower .leaf {
+    fill: #a9c3ab;
+}
+
+.flower .bloom {
+    transform-origin: 50% 50%;
+    animation: breathe var(--breathe, 5s) ease-in-out infinite alternate;
+}
+
+@keyframes sway {
+    from { transform: rotate(-6deg); }
+    to   { transform: rotate(6deg); }
+}
+
+@keyframes breathe {
+    from { transform: scale(1); }
+    to   { transform: scale(1.06); }
+}
+
+.bouquet-wrap {
+    position: absolute;
+    left: 50%;
+    bottom: 0;
+    transform: translateX(-50%);
+    width: 150px;
+    height: 110px;
+}
+
+.bouquet-wrap svg {
+    position: absolute;
+    left: 50%;
+    top: 0;
+    transform: translateX(-50%);
+}
+
+/* ------- message ------- */
+.message {
+    background: rgba(253, 251, 247, 0.72);
+    backdrop-filter: blur(6px);
+    border: 1px solid rgba(255, 255, 255, 0.7);
+    border-radius: 22px;
+    padding: 36px 32px;
+    margin-bottom: 40px;
+    box-shadow: 0 16px 40px rgba(70, 110, 140, 0.14);
+}
+
+.msg-body {
+    font-family: "Cormorant Garamond", serif;
+    font-size: clamp(20px, 4vw, 26px);
+    font-style: italic;
+    line-height: 1.6;
+    color: var(--ink-dark);
+}
+
+/* ------- photo ------- */
+.photo-spot {
+    margin-bottom: 48px;
+}
+
+.photo-frame {
+    width: min(320px, 78vw);
+    aspect-ratio: 4 / 5;
+    margin: 0 auto;
+    border-radius: 18px;
+    border: 5px solid rgba(253, 251, 247, 0.9);
+    box-shadow: 0 16px 40px rgba(70, 110, 140, 0.18);
+    background:
+        radial-gradient(circle at 30% 25%, rgba(184, 214, 232, 0.55), transparent 45%),
+        linear-gradient(160deg, #e7f1f8, #bdd6e6);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+}
+
+.photo-note {
+    font-size: 13px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+    opacity: 0.7;
+}
+
+.photo-frame img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+.photo-caption {
+    margin-top: 14px;
+    font-size: 14px;
+    font-weight: 300;
+    font-style: italic;
+    color: var(--ink-soft);
+}
+
+/* ------- footer ------- */
+.foot {
+    padding-top: 8px;
+    font-size: 14px;
+    color: var(--ink-soft);
+    opacity: 0.85;
+}
+
+/* ------- music toggle ------- */
+.music-toggle {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 20;
+    width: 46px;
+    height: 46px;
+    border-radius: 50%;
+    border: none;
+    background: rgba(253, 251, 247, 0.85);
+    color: var(--ink-dark);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 6px 18px rgba(70, 110, 140, 0.25);
+    transition: transform 0.3s ease;
+}
+
+.music-toggle:hover {
+    transform: scale(1.08);
+}
+
+.music-toggle.playing .note {
+    animation: spin 3s linear infinite;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+/* ------- petals / hearts ------- */
+.fall {
+    position: fixed;
+    top: -6vh;
+    z-index: 1;
+    pointer-events: none;
+    animation-name: fall;
+    animation-timing-function: linear;
+    animation-iteration-count: infinite;
+}
+
+@keyframes fall {
+    to {
+        transform: translateY(112vh) rotate(540deg);
+    }
+}
+
+@media (max-width: 480px) {
+    .bouquet { height: 260px; }
+}
