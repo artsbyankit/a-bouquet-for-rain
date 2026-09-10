@@ -113,9 +113,10 @@ function spawnOneFall() {
     }
     el.style.left = Math.random() * 100 + 'vw';
     el.style.animationDuration = (6 + Math.random() * 6) + 's';
-    el.style.animationDelay = Math.random() * 6 + 's';
+    el.style.animationDelay = Math.random() * 4 + 's';
     document.body.appendChild(el);
-    setTimeout(() => el.remove(), 16000);
+    el.addEventListener('animationend', () => el.remove(), { once: true });
+    setTimeout(() => el.remove(), (6 + 6 + 4) * 1000 + 2000);
 }
 
 function spawnFall() {
@@ -138,6 +139,7 @@ function flowerRain() {
             el.style.left = Math.random() * 100 + 'vw';
             el.style.animationDuration = (2 + Math.random() * 1.6) + 's';
             document.body.appendChild(el);
+            el.addEventListener('animationend', () => el.remove(), { once: true });
             setTimeout(() => el.remove(), 5000);
         }, Math.random() * 5000);
     }
