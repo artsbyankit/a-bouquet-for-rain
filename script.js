@@ -240,11 +240,23 @@ toggle.addEventListener('click', () => {
     spawnDemoDiamond();
 });
 
-function spawnDemoCake() {
-    spawnCelebrationRain(130);
+let cakeTimer = null;
+const cakeToggle = document.getElementById('cake-toggle');
+function cakeStart() {
+    if (cakeTimer) return;
+    spawnCelebrationRain(170);
+    cakeTimer = setInterval(() => spawnCelebrationRain(140), 5000);
+    cakeToggle.classList.add('playing');
 }
-
-document.getElementById('cake-toggle').addEventListener('click', spawnDemoCake);
+function cakeStop() {
+    if (cakeTimer) clearInterval(cakeTimer);
+    cakeTimer = null;
+    cakeToggle.classList.remove('playing');
+}
+cakeToggle.addEventListener('click', () => {
+    if (cakeTimer) cakeStop();
+    else cakeStart();
+});
 
 function isRainDay() {
     const d = new Date();

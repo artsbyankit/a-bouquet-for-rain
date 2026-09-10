@@ -381,7 +381,8 @@ body {
     transform: scale(1.08);
 }
 
-.music-toggle.playing {
+.music-toggle.playing,
+.cake-toggle.playing {
     background: rgba(95, 143, 184, 0.85);
     color: #fff;
 }
