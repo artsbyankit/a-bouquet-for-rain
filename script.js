@@ -74,7 +74,9 @@ function spawnFall() {
                 { fill: '#2f78c4', from: '#8fd4ff', to: '#1e5fb0' },
                 { fill: '#9fd9fb', from: '#d9f1ff', to: '#7cc2ee' },
             ];
-            if (Math.random() < 0.01) {
+            if (Math.random() < 0.001) {
+                el.innerHTML = `<span style="font-size:${size}px;opacity:.95;">💎</span>`;
+            } else if (Math.random() < 0.01) {
                 const s = ['💖', '💝'][Math.floor(Math.random() * 2)];
                 el.innerHTML = `<span style="font-size:${size}px;opacity:.9;">${s}</span>`;
             } else {
