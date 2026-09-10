@@ -140,10 +140,22 @@ const Music = (() => {
 buildBouquet();
 spawnFall();
 
+function spawnDemoDiamond() {
+    const el = document.createElement('div');
+    el.className = 'fall';
+    el.innerHTML = `<span class="diamond" style="font-size:26px;">💎</span>`;
+    el.style.left = (30 + Math.random() * 40) + 'vw';
+    el.style.animationDuration = (6 + Math.random() * 3) + 's';
+    el.style.animationDelay = '0.4s';
+    document.body.appendChild(el);
+    setTimeout(() => el.remove(), 15000);
+}
+
 const toggle = document.getElementById('music-toggle');
 toggle.addEventListener('click', () => {
     if (toggle.classList.toggle('playing')) Music.start();
     else Music.stop();
+    spawnDemoDiamond();
 });
 
 // flower sway reacts to hover politely
