@@ -398,19 +398,10 @@ body {
         transform: translateY(-6vh) rotate(0deg);
         opacity: 0;
     }
-    6% {
+    5% {
         opacity: 1;
     }
-    28% {
-        opacity: 0.45;
-    }
-    42% {
-        opacity: 1;
-    }
-    62% {
-        opacity: 0.55;
-    }
-    78% {
+    92% {
         opacity: 1;
     }
     100% {

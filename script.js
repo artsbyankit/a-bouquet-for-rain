@@ -88,54 +88,58 @@ function buildBouquet() {
 }
 
 /* ---------- floating petals & hearts ---------- */
-function spawnFall() {
-    setInterval(() => {
-        const r = Math.random();
-        const kind = r < 0.45 ? 'petal' : (r < 0.85 ? 'heart' : 'leaf');
-        const el = document.createElement('div');
-        el.className = 'fall';
-        const size = 10 + Math.random() * 14;
-        if (kind === 'petal') {
-            el.innerHTML = `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="#ffffff" opacity="0.85"><path d="M12 2 C18 8 18 16 12 22 C6 16 6 8 12 2 Z"/></svg>`;
-        } else if (kind === 'leaf') {
-            el.innerHTML = `<svg width="${size}" height="${size * 0.72}" viewBox="0 0 32 23" fill="#9dbd9f" opacity="0.85"><path d="M22 1 C10 4 3 10 2 17 L2 23 C8 22 24 16 30 8 Z"/><path d="M6 12 L30 12" stroke="#7d9b84" stroke-width="1.4"/></svg>`;
+function spawnOneFall() {
+    const r = Math.random();
+    const kind = r < 0.45 ? 'petal' : (r < 0.85 ? 'heart' : 'leaf');
+    const el = document.createElement('div');
+    el.className = 'fall';
+    const size = 10 + Math.random() * 14;
+    if (kind === 'petal') {
+        el.innerHTML = `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="#ffffff" opacity="0.85"><path d="M12 2 C18 8 18 16 12 22 C6 16 6 8 12 2 Z"/></svg>`;
+    } else if (kind === 'leaf') {
+        el.innerHTML = `<svg width="${size}" height="${size * 0.72}" viewBox="0 0 32 23" fill="#9dbd9f" opacity="0.85"><path d="M22 1 C10 4 3 10 2 17 L2 23 C8 22 24 16 30 8 Z"/><path d="M6 12 L30 12" stroke="#7d9b84" stroke-width="1.4"/></svg>`;
+    } else {
+        const hearts = ['💙', '🩵', '🤍', '💙', '🩵', '🤍'];
+        if (Math.random() < 0.001) {
+            el.innerHTML = `<span style="font-size:${size}px;opacity:.95;">💎</span>`;
+            el.style.animationDelay = '1s';
+        } else if (Math.random() < 0.01) {
+            const s = ['💖', '💝'][Math.floor(Math.random() * 2)];
+            el.innerHTML = `<span style="font-size:${size}px;opacity:.9;">${s}</span>`;
         } else {
-            const hearts = ['💙', '🩵', '🤍', '💙', '🩵', '🤍'];
-            if (Math.random() < 0.001) {
-                el.innerHTML = `<span style="font-size:${size}px;opacity:.95;">💎</span>`;
-                el.style.animationDelay = '1s';
-            } else if (Math.random() < 0.01) {
-                const s = ['💖', '💝'][Math.floor(Math.random() * 2)];
-                el.innerHTML = `<span style="font-size:${size}px;opacity:.9;">${s}</span>`;
-            } else {
-                const h = hearts[Math.floor(Math.random() * hearts.length)];
-                el.innerHTML = `<span style="font-size:${size}px;opacity:.85;">${h}</span>`;
-            }
+            const h = hearts[Math.floor(Math.random() * hearts.length)];
+            el.innerHTML = `<span style="font-size:${size}px;opacity:.85;">${h}</span>`;
         }
-        el.style.left = Math.random() * 100 + 'vw';
-        el.style.animationDuration = (6 + Math.random() * 6) + 's';
-        el.style.animationDelay = Math.random() * 6 + 's';
-        document.body.appendChild(el);
-        setTimeout(() => el.remove(), 16000);
-    }, 450);
+    }
+    el.style.left = Math.random() * 100 + 'vw';
+    el.style.animationDuration = (6 + Math.random() * 6) + 's';
+    el.style.animationDelay = Math.random() * 6 + 's';
+    document.body.appendChild(el);
+    setTimeout(() => el.remove(), 16000);
+}
+
+function spawnFall() {
+    const tick = () => {
+        spawnOneFall();
+        setTimeout(tick, 380 + Math.random() * 420);
+    };
+    tick();
 }
 
 /* ---------- flower rain on double-click of the name ---------- */
 function flowerRain() {
     const emojis = ['🌹', '🌷', '🌺', '🥀', '🌼', '🌸', '💐', '🏵️', '🪷', '🍀', '🪻', '🌻', '💮'];
-    for (let b = 0; b < 3; b++) {
+    for (let i = 0; i < 95; i++) {
         setTimeout(() => {
-            for (let i = 0; i < 42; i++) {
-                const el = document.createElement('div');
-                el.className = 'fall frain';
-                const size = 16 + Math.random() * 16;
-                el.innerHTML = `<span style="font-size:${size}px;">${emojis[Math.floor(Math.random() * emojis.length)]}</span>`;
-                el.style.left = Math.random() * 100 + 'vw';
-                el.style.animationDuration = (2 + Math.random() * 1.6) + 's';
-                document.body.appendChild(el);
-                setTimeout(() => el.remove(), 5000);
-            }
-        }, b * 650);
+            const el = document.createElement('div');
+            el.className = 'fall frain';
+            const size = 16 + Math.random() * 16;
+            el.innerHTML = `<span style="font-size:${size}px;">${emojis[Math.floor(Math.random() * emojis.length)]}</span>`;
+            el.style.left = Math.random() * 100 + 'vw';
+            el.style.animationDuration = (2 + Math.random() * 1.6) + 's';
+            document.body.appendChild(el);
+            setTimeout(() => el.remove(), 5000);
+        }, Math.random() * 5000);
     }
 }
 
