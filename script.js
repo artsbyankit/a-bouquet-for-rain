@@ -122,7 +122,7 @@ function spawnFall() {
 
 /* ---------- flower rain on double-click of the name ---------- */
 function flowerRain() {
-    const emojis = ['🌸', '🌼', '🌷', '🌺', '🌻', '🏵️', '🌹', '💐'];
+    const emojis = ['🌹', '🌷', '🌺', '🥀', '🌼', '🌸', '💐', '🏵️', '🪷', '🍀', '🪻', '🌻', '💮'];
     for (let b = 0; b < 3; b++) {
         setTimeout(() => {
             for (let i = 0; i < 42; i++) {
