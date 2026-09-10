@@ -65,9 +65,21 @@ function spawnFall() {
         } else if (kind === 'leaf') {
             el.innerHTML = `<svg width="${size}" height="${size * 0.72}" viewBox="0 0 32 23" fill="#9dbd9f" opacity="0.85"><path d="M22 1 C10 4 3 10 2 17 L2 23 C8 22 24 16 30 8 Z"/><path d="M6 12 L30 12" stroke="#7d9b84" stroke-width="1.4"/></svg>`;
         } else {
-            const hearts = ['💙', '🤍', '💙', '💙', '🤍'];
+            const hearts = [
+                { t: 'white' },
+                { t: 'sky' },
+                { t: 'white' },
+                { t: 'deep' },
+                { t: 'sky' },
+                { t: 'deep' },
+            ];
             const h = hearts[Math.floor(Math.random() * hearts.length)];
-            el.innerHTML = `<span style="font-size:${size}px;opacity:.85;">${h}</span>`;
+            if (h.t === 'white') {
+                el.innerHTML = `<span style="font-size:${size}px;opacity:.85;">🤍</span>`;
+            } else {
+                const fill = h.t === 'sky' ? '#8ecdea' : '#2455a8';
+                el.innerHTML = `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="${fill}" opacity="0.9"><path d="M12 21 C5 15 3 10 3 6.8 C3 4 5.4 2 8.2 2 C10 2 11.2 2.8 12 4.2 C12.8 2.8 14 2 15.8 2 C18.6 2 21 4 21 6.8 C21 10 19 15 12 21 Z"/></svg>`;
+            }
         }
         el.style.left = Math.random() * 100 + 'vw';
         el.style.animationDuration = (6 + Math.random() * 6) + 's';
