@@ -67,7 +67,7 @@ function spawnFall() {
         } else {
             const hearts = ['💙', '🩵', '🤍', '💙', '🩵', '🤍'];
             if (Math.random() < 0.001) {
-                el.innerHTML = `<span class="diamond">💎</span>`;
+                el.innerHTML = `<span style="font-size:${size}px;opacity:.95;">💎</span>`;
                 el.style.animationDelay = '1s';
             } else if (Math.random() < 0.01) {
                 const s = ['💖', '💝'][Math.floor(Math.random() * 2)];
@@ -143,7 +143,7 @@ spawnFall();
 function spawnDemoDiamond() {
     const el = document.createElement('div');
     el.className = 'fall';
-    el.innerHTML = `<span class="diamond" style="font-size:26px;">💎</span>`;
+    el.innerHTML = `<span style="font-size:26px;opacity:.95;">💎</span>`;
     el.style.left = (30 + Math.random() * 40) + 'vw';
     el.style.animationDuration = (6 + Math.random() * 3) + 's';
     el.style.animationDelay = '0.4s';
