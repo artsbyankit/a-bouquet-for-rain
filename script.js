@@ -251,10 +251,19 @@ function isRainDay() {
     return d.getMonth() === 4 && d.getDate() === 9;
 }
 
-if (isRainDay()) {
-    spawnCelebrationRain(180);
-    setInterval(() => spawnCelebrationRain(130), 6000);
+let rainDayTimer = null;
+function startRainDay() {
+    if (rainDayTimer) return;
+    spawnCelebrationRain(170);
+    rainDayTimer = setInterval(() => spawnCelebrationRain(140), 5000);
 }
+
+function checkRainDay() {
+    if (isRainDay() && !rainDayTimer) startRainDay();
+}
+
+checkRainDay();
+setInterval(checkRainDay, 60000);
 
 // flower sway reacts to hover politely
 document.querySelectorAll('.flower').forEach(f => {
