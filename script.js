@@ -54,16 +54,20 @@ function buildBouquet() {
 
 /* ---------- floating petals & hearts ---------- */
 function spawnFall() {
-    const kinds = ['petal', 'heart'];
     setInterval(() => {
-        const kind = kinds[Math.floor(Math.random() * kinds.length)];
+        const r = Math.random();
+        const kind = r < 0.45 ? 'petal' : (r < 0.85 ? 'heart' : 'leaf');
         const el = document.createElement('div');
         el.className = 'fall';
         const size = 10 + Math.random() * 14;
         if (kind === 'petal') {
             el.innerHTML = `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="#ffffff" opacity="0.85"><path d="M12 2 C18 8 18 16 12 22 C6 16 6 8 12 2 Z"/></svg>`;
+        } else if (kind === 'leaf') {
+            el.innerHTML = `<svg width="${size}" height="${size * 0.72}" viewBox="0 0 32 23" fill="#9dbd9f" opacity="0.85"><path d="M22 1 C10 4 3 10 2 17 L2 23 C8 22 24 16 30 8 Z"/><path d="M6 12 L30 12" stroke="#7d9b84" stroke-width="1.4"/></svg>`;
         } else {
-            el.innerHTML = `<span style="font-size:${size}px;opacity:.8;">💙</span>`;
+            const hearts = ['💙', '🤍', '💙', '💙', '🤍'];
+            const h = hearts[Math.floor(Math.random() * hearts.length)];
+            el.innerHTML = `<span style="font-size:${size}px;opacity:.85;">${h}</span>`;
         }
         el.style.left = Math.random() * 100 + 'vw';
         el.style.animationDuration = (6 + Math.random() * 6) + 's';
