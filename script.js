@@ -132,13 +132,6 @@ const Music = (() => {
 buildBouquet();
 spawnFall();
 
-window.addEventListener('load', function () {
-    setTimeout(() => {
-        const loader = document.getElementById('loader');
-        if (loader) loader.classList.add('done');
-    }, 1400);
-});
-
 const toggle = document.getElementById('music-toggle');
 toggle.addEventListener('click', () => {
     if (toggle.classList.toggle('playing')) Music.start();
