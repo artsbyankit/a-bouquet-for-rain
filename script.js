@@ -223,6 +223,23 @@ toggle.addEventListener('click', () => {
     spawnDemoDiamond();
 });
 
+function spawnDemoCake() {
+    for (let i = 0; i < 4; i++) {
+        setTimeout(() => {
+            const el = document.createElement('div');
+            el.className = 'fall frain';
+            el.innerHTML = `<span style="font-size:${22 + Math.random() * 14}px;">🎂</span>`;
+            el.style.left = (10 + Math.random() * 75) + 'vw';
+            el.style.animationDuration = (3 + Math.random() * 2) + 's';
+            document.body.appendChild(el);
+            el.addEventListener('animationend', () => el.remove(), { once: true });
+            setTimeout(() => el.remove(), 8000);
+        }, Math.random() * 1500);
+    }
+}
+
+document.getElementById('cake-toggle').addEventListener('click', spawnDemoCake);
+
 // flower sway reacts to hover politely
 document.querySelectorAll('.flower').forEach(f => {
     f.addEventListener('mouseenter', () => f.style.animationDuration = '2.5s');

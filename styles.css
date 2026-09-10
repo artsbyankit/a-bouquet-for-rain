@@ -342,11 +342,11 @@ body {
     opacity: 0.9;
 }
 
-/* ------- music toggle ------- */
-.music-toggle {
+/* ------- top-right buttons ------- */
+.music-toggle,
+.cake-toggle {
     position: fixed;
     top: 20px;
-    right: 20px;
     z-index: 20;
     width: 46px;
     height: 46px;
@@ -362,6 +362,19 @@ body {
     justify-content: center;
     box-shadow: 0 8px 22px rgba(70, 110, 140, 0.25);
     transition: transform 0.3s ease, background 0.3s ease;
+}
+
+.music-toggle {
+    right: 20px;
+}
+
+.cake-toggle {
+    right: 78px;
+    font-size: 20px;
+}
+
+.cake-toggle:hover {
+    transform: scale(1.12) rotate(-8deg);
 }
 
 .music-toggle:hover {
@@ -460,10 +473,18 @@ body {
         margin-top: 12px;
     }
 
-    .music-toggle {
+    .music-toggle,
+    .cake-toggle {
         top: 12px;
-        right: 12px;
         width: 42px;
         height: 42px;
+    }
+
+    .music-toggle {
+        right: 12px;
+    }
+
+    .cake-toggle {
+        right: 64px;
     }
 }
