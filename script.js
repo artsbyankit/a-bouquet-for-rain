@@ -216,6 +216,23 @@ function spawnDemoDiamond() {
     setTimeout(() => el.remove(), 15000);
 }
 
+function spawnCelebrationRain(count) {
+    const party = ['🎂', '🍰', '🧁', '🍥', '🍮', '🍩', '🍪', '🥂', '🍾', '🥃', '🍹', '🍸', '🍷', '🧋', '🥤', '☕', '🫖', '🎈', '🎉', '🎊', '🥳', '🎆', '🎇', '✨', '🎁', '🎀', '🪅', '🪩', '📦', '💝', '💖', '💗', '💓', '💕', '💞', '💘', '💌', '🎵', '🎶', '🥰', '😍', '🤩', '😊', '😄', '😃', '😀', '😆', '😁', '🍭', '🍬', '🍫', '🍨', '🍦', '🍓', '🍒', '🍉', '🍇', '🧃', '😋', '🤗', '😘', '🥹', '🙌', '👏', '🕺', '💃', '🎤', '🎺', '🥁', '🕯️', '🔥', '🌟', '⭐', '💫', '🌙', '❤️', '🩷', '🧡', '💛', '💚', '💙', '🩵', '💜', '🤎', '🖤', '🤍', '💟', '❣️', '🧸', '🫶🏻', '🦋', '🐻', '🐼', '🐰', '🐣', '🐥', '🐱', '🐶', '🦄', '🌈', '👑', '💎', '💍', '🏆', '🥇'];
+    for (let i = 0; i < count; i++) {
+        setTimeout(() => {
+            const el = document.createElement('div');
+            el.className = 'fall frain';
+            const size = 18 + Math.random() * 16;
+            el.innerHTML = `<span style="font-size:${size}px;">${party[Math.floor(Math.random() * party.length)]}</span>`;
+            el.style.left = Math.random() * 100 + 'vw';
+            el.style.animationDuration = (2 + Math.random() * 2) + 's';
+            document.body.appendChild(el);
+            el.addEventListener('animationend', () => el.remove(), { once: true });
+            setTimeout(() => el.remove(), 8000);
+        }, Math.random() * 4000);
+    }
+}
+
 const toggle = document.getElementById('music-toggle');
 toggle.addEventListener('click', () => {
     if (toggle.classList.toggle('playing')) Music.start();
@@ -224,21 +241,20 @@ toggle.addEventListener('click', () => {
 });
 
 function spawnDemoCake() {
-    for (let i = 0; i < 4; i++) {
-        setTimeout(() => {
-            const el = document.createElement('div');
-            el.className = 'fall frain';
-            el.innerHTML = `<span style="font-size:${22 + Math.random() * 14}px;">🎂</span>`;
-            el.style.left = (10 + Math.random() * 75) + 'vw';
-            el.style.animationDuration = (3 + Math.random() * 2) + 's';
-            document.body.appendChild(el);
-            el.addEventListener('animationend', () => el.remove(), { once: true });
-            setTimeout(() => el.remove(), 8000);
-        }, Math.random() * 1500);
-    }
+    spawnCelebrationRain(130);
 }
 
 document.getElementById('cake-toggle').addEventListener('click', spawnDemoCake);
+
+function isRainDay() {
+    const d = new Date();
+    return d.getMonth() === 4 && d.getDate() === 9;
+}
+
+if (isRainDay()) {
+    spawnCelebrationRain(180);
+    setInterval(() => spawnCelebrationRain(130), 6000);
+}
 
 // flower sway reacts to hover politely
 document.querySelectorAll('.flower').forEach(f => {
