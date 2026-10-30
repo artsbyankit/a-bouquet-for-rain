@@ -95,15 +95,15 @@ const isRainDay = () => {
 
 /* Celebration rain runs on May 9, or whenever the cake button says so. A press
    of the button wins for the rest of that day; the next day starts fresh. */
-export function setupCelebration(button) {
+export function setupCelebration(button = null) {
     let timer = null;
     let override = null;
     let today = new Date().toDateString();
 
     const apply = () => {
         const on = override ?? isRainDay();
-        button.classList.toggle('playing', on);
-        button.setAttribute('aria-pressed', String(on));
+        button?.classList.toggle('playing', on);
+        button?.setAttribute('aria-pressed', String(on));
         if (on && !timer) {
             celebrationBurst(100);
             timer = setInterval(() => celebrationBurst(60), 5000);
@@ -113,7 +113,7 @@ export function setupCelebration(button) {
         }
     };
 
-    button.addEventListener('click', () => {
+    button?.addEventListener('click', () => {
         override = !(override ?? isRainDay());
         apply();
     });

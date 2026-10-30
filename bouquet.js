@@ -34,11 +34,11 @@ function shuffled(list) {
     return out;
 }
 
-function pickColors(count) {
+function pickColors(count, limit = MAX_OF_ONE_COLOR) {
     const used = {};
     const colors = [];
     while (colors.length < count) {
-        const names = Object.keys(COLOR_WEIGHTS).filter((n) => (used[n] || 0) < MAX_OF_ONE_COLOR);
+        const names = Object.keys(COLOR_WEIGHTS).filter((n) => (used[n] || 0) < limit);
         let roll = Math.random() * names.reduce((sum, n) => sum + COLOR_WEIGHTS[n], 0);
         const name = names.find((n) => (roll -= COLOR_WEIGHTS[n]) < 0) || names[0];
         used[name] = (used[name] || 0) + 1;
@@ -59,6 +59,39 @@ const BLOOM_SLOTS = [
     { x: 262, y: 176, size: 42 },
     { x: 180, y: 136, size: 56, hero: true },
 ];
+
+// Smaller flowers that fill the gaps. front ones sit ahead of the main blooms,
+// the rest tuck in behind them. Each tier gets its own mix of flowers.
+const MEDIUM_SLOTS = [
+    { x: 56, y: 110, size: 28 },
+    { x: 306, y: 106, size: 28 },
+    { x: 124, y: 138, size: 28 },
+    { x: 238, y: 132, size: 28 },
+    { x: 138, y: 214, size: 30, front: true },
+    { x: 224, y: 216, size: 30, front: true },
+];
+
+const SMALL_SLOTS = [
+    { x: 26, y: 150, size: 18 },
+    { x: 334, y: 146, size: 18 },
+    { x: 82, y: 38, size: 18 },
+    { x: 280, y: 30, size: 18 },
+    { x: 140, y: 12, size: 18 },
+    { x: 220, y: 10, size: 18 },
+    { x: 60, y: 208, size: 19 },
+    { x: 302, y: 206, size: 19 },
+    { x: 180, y: 204, size: 22, front: true },
+];
+
+const TINY_SLOTS = [
+    { x: 136, y: 50 }, { x: 222, y: 42 }, { x: 154, y: 96 }, { x: 208, y: 92 },
+    { x: 68, y: 70 }, { x: 296, y: 66 }, { x: 40, y: 182 }, { x: 322, y: 178 },
+    { x: 104, y: 124 }, { x: 258, y: 122 }, { x: 110, y: 222 }, { x: 252, y: 224 },
+    { x: 170, y: 16 }, { x: 196, y: 26 },
+];
+
+const MEDIUM_KINDS = ['anemone', 'daisy', 'cosmos', 'ranunculus', 'poppy', 'rose', 'lily', 'peony'];
+const SMALL_KINDS = ['daisy', 'cosmos', 'blossom', 'ranunculus', 'anemone'];
 
 // Greenery and fillers, tucked in behind the blooms. lift arches a low stem upward
 // so it leaves through the wrap's opening rather than behind its side.
@@ -148,6 +181,12 @@ const DRAW = {
         return ring(15, r, r * 0.17, 0, wash(name), name, 1)
             + `<circle r="${round(r * 0.27)}" fill="${p.core}" stroke="${INK}" stroke-width="0.6"/>`
             + stamens(10, r * 0.15, 0.8, p.stamen);
+    },
+    blossom(r, name) {
+        // A simple five-petal flower, clear even at tiny sizes.
+        const p = PALETTES[name];
+        return ring(5, r, r * 0.46, 0, wash(name), name)
+            + `<circle r="${round(r * 0.24)}" fill="${p.stamen}" stroke="${INK}" stroke-width="0.4"/>`;
     },
     rose(r, name) {
         const p = PALETTES[name];
@@ -328,7 +367,7 @@ const HERO_KINDS = ['peony', 'rose', 'ranunculus', 'hydrangea', 'anemone', 'popp
 const KIND_SCALE = { tulip: 0.86, daisy: 0.92, lily: 1.1 };
 
 function pickKinds(slots) {
-    const kinds = shuffled(Object.keys(DRAW));
+    const kinds = shuffled(Object.keys(DRAW).filter((k) => k !== 'blossom'));
     const hero = shuffled(HERO_KINDS)[0];
     const rest = kinds.filter((k) => k !== hero);
     let next = 0;
@@ -341,26 +380,65 @@ function pickKinds(slots) {
     return picks;
 }
 
+function drawBloom(slot, kind, color, stemWidth) {
+    const x = Math.round(slot.x + random(-4, 4));
+    const y = Math.round(slot.y + random(-4, 4));
+    const turn = kind === 'tulip' ? tipAngle({ x, y }) : Math.round(random(-30, 30));
+    return `${stem(x, y, stemWidth)}<g transform="translate(${x} ${y}) rotate(${turn})">${DRAW[kind](slot.size * (KIND_SCALE[kind] || 1), color)}</g>`;
+}
+
+// The smallest pieces share layers: nobody can tell them apart in motion, and
+// every layer costs memory.
+function grouped(items, groups) {
+    const out = Array.from({ length: groups }, () => ({ sway: random(5.8, 8), art: '' }));
+    items.forEach((art, i) => {
+        out[i % groups].art += art;
+    });
+    return out;
+}
+
+const single = (art) => ({ sway: random(5.4, 7.8), art });
+
 export function buildBouquet(host) {
     const sprigKinds = shuffled([...SPRIG_KINDS, ...SPRIG_KINDS]);
-    const sprigs = SPRIG_SLOTS.map((slot, i) => ({
-        sway: random(6.4, 8.4),
-        art: stem(slot.x, slot.y, 1.2, slot.lift) + SPRIG_ART[sprigKinds[i]](slot),
-    }));
+    const fillers = grouped(SPRIG_SLOTS.map((slot, i) => stem(slot.x, slot.y, 1.2, slot.lift) + SPRIG_ART[sprigKinds[i]](slot)), 4);
 
     const kinds = pickKinds(BLOOM_SLOTS);
     const colors = pickColors(BLOOM_SLOTS.length);
-    const blooms = BLOOM_SLOTS.map((slot, i) => {
-        const x = Math.round(slot.x + random(-5, 5));
-        const y = Math.round(slot.y + random(-5, 5));
-        const kind = kinds[i];
-        const turn = kind === 'tulip' ? tipAngle({ x, y }) : Math.round(random(-30, 30));
-        return {
-            sway: random(5.4, 7.8),
-            art: `${stem(x, y, 2.4)}<g transform="translate(${x} ${y}) rotate(${turn})">${DRAW[kind](slot.size * (KIND_SCALE[kind] || 1), colors[i])}</g>`,
-        };
+    const blooms = BLOOM_SLOTS.map((slot, i) => single(drawBloom(slot, kinds[i], colors[i], 2.4)));
+
+    const mediumKinds = shuffled(MEDIUM_KINDS);
+    const mediumColors = pickColors(MEDIUM_SLOTS.length, 2);
+    const medium = MEDIUM_SLOTS.map((slot, i) => ({ front: slot.front, art: drawBloom(slot, mediumKinds[i], mediumColors[i], 1.8) }));
+
+    const smallKinds = shuffled(SMALL_KINDS);
+    const smallColors = pickColors(SMALL_SLOTS.length);
+    const small = SMALL_SLOTS.map((slot, i) => ({ front: slot.front, art: drawBloom(slot, smallKinds[i % smallKinds.length], smallColors[i], 1.3) }));
+
+    const tinyColors = pickColors(TINY_SLOTS.length, 4);
+    // Tiny flowers sit on top, but their stems stay behind the main blooms. Each
+    // stem layer pairs with a flower layer, so the two sway together.
+    const tinySlots = TINY_SLOTS.map((slot) => ({ x: Math.round(slot.x + random(-4, 4)), y: Math.round(slot.y + random(-4, 4)), size: random(8, 12) }));
+    const tinyStems = grouped(tinySlots.map((slot) => stem(slot.x, slot.y, 0.9)), 2);
+    const tinyHeads = grouped(tinySlots.map((slot, i) => `<g transform="translate(${slot.x} ${slot.y}) rotate(${Math.round(random(-30, 30))})">${DRAW.blossom(slot.size, tinyColors[i])}</g>`), 2);
+    tinyStems.forEach((layer, i) => {
+        layer.delay = -3.7 * (i + 1);
+        tinyHeads[i].sway = layer.sway;
+        tinyHeads[i].delay = layer.delay;
     });
-    const flowers = [...sprigs, ...blooms];
+
+    const behind = (list) => list.filter((f) => !f.front);
+    const ahead = (list) => list.filter((f) => f.front);
+    const flowers = [
+        ...fillers,
+        ...tinyStems,
+        ...grouped(behind(small).map((f) => f.art), 2),
+        ...behind(medium).map((f) => single(f.art)),
+        ...blooms,
+        ...ahead(medium).map((f) => single(f.art)),
+        ...ahead(small).map((f) => single(f.art)),
+        ...tinyHeads,
+    ];
 
     host.innerHTML = `${paintDefs()}
         ${layer('layer', SHADOW + WRAP_BACK)}
@@ -370,6 +448,6 @@ export function buildBouquet(host) {
     // Timing goes through CSSOM so the Content-Security-Policy can forbid inline styles.
     host.querySelectorAll('.flower').forEach((el, i) => {
         el.style.animationDuration = `${flowers[i].sway}s`;
-        el.style.animationDelay = `${round(-i * 0.9)}s`;
+        el.style.animationDelay = `${flowers[i].delay ?? round(-i * 0.9)}s`;
     });
 }

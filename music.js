@@ -5,6 +5,7 @@ const ROOT = 220; // A3
 const SCALE = [0, 2, 4, 5, 7, 9, 11];
 const BEAT = 0.6; // seconds
 const LOOKAHEAD = 2; // seconds of notes queued in advance
+const FADE_IN = 12; // seconds from silence to full volume on page load
 
 // [scale degree, beats]
 const SONG = [
@@ -47,19 +48,28 @@ export function createMusic() {
     }
 
     return {
-        start() {
+        // Browsers keep audio frozen until the visitor interacts with the page. The
+        // fade runs on the audio clock, so it begins whenever sound can actually play.
+        start(fade = FADE_IN) {
             ctx ||= new (window.AudioContext || window.webkitAudioContext)();
             ctx.resume();
             master = ctx.createGain();
+            master.gain.setValueAtTime(0, ctx.currentTime);
+            master.gain.linearRampToValueAtTime(1, ctx.currentTime + fade);
             master.connect(ctx.destination);
             index = 0;
             nextTime = ctx.currentTime + 0.05;
             schedule();
             timer = setInterval(schedule, 500);
         },
+        // Call from a user gesture. Resolves once audio is really running.
+        unlock() {
+            return ctx ? ctx.resume() : Promise.resolve();
+        },
         stop() {
             clearInterval(timer);
             // Queued notes can't be recalled, so fade out the bus they play through.
+            master.gain.cancelScheduledValues(ctx.currentTime);
             master.gain.setTargetAtTime(0, ctx.currentTime, 0.08);
             const old = master;
             setTimeout(() => old.disconnect(), 600);
