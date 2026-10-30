@@ -6,7 +6,7 @@ https://artsbyankit.github.io/a-bouquet-for-rain/
 
 ## Files
 
-- `bouquet.js` — the bouquet artwork, random on each load; tune it with `COLOR_WEIGHTS`, `BLOOM_SLOTS` and the `DRAW` flowers
+- `bouquet.js` — the bouquet artwork, random on each load; tune it with `COLOR_WEIGHTS`, the `*_SLOTS` tables and the `DRAW` flowers
 - `falling.js` — falling petals, flower rain and the May 9 celebration
 - `music.js` — the music box
 - `liquidGlass.js` — refractive glass (Chromium; other browsers get frost)
