@@ -12,7 +12,7 @@ https://artsbyankit.github.io/a-bouquet-for-rain/
 - `liquidGlass.js` — refractive glass (Chromium; other browsers get frost)
 - `styles.css`, `index.html`, `fonts/`
 
-To add the photo, put an `<img src="photo.jpg" alt="...">` inside `.photo-inner` in place of the note.
+To change the photo, replace `photo.webp`.
 
 ## Running locally
 
