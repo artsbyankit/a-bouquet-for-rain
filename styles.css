@@ -1,15 +1,51 @@
+@font-face {
+    font-family: "Cormorant Garamond";
+    src: url("fonts/cormorant-garamond-latin-wght-normal.woff2") format("woff2");
+    font-weight: 300 700;
+    font-style: normal;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: "Cormorant Garamond";
+    src: url("fonts/cormorant-garamond-latin-wght-italic.woff2") format("woff2");
+    font-weight: 300 700;
+    font-style: italic;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: "Inter";
+    src: url("fonts/inter-latin-wght-normal.woff2") format("woff2");
+    font-weight: 100 900;
+    font-style: normal;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: "IBM Plex Mono";
+    src: url("fonts/ibm-plex-mono-latin-400-normal.woff2") format("woff2");
+    font-weight: 400;
+    font-style: normal;
+    font-display: swap;
+}
+
 :root {
+    --mono: "IBM Plex Mono", ui-monospace, Menlo, Consolas, monospace;
     --powder: #bcd8ea;
     --powder-2: #a7c8de;
     --powder-3: #8fb8d4;
     --powder-deep: #5f8fb8;
     --cream: #fdfcf9;
-    --ink-dark: #22394d;
-    --ink-soft: #59708a;
-    --champagne: #f4e6bd;
-    --champagne-deep: #e7c98c;
-    --rose: #f3d7e3;
-    --rose-deep: #e2a8c4;
+    --ink-dark: #1f3550;
+    --ink-soft: #4d6480;
+    --frost: blur(8px) saturate(130%);
+}
+
+/* Set per surface by liquidGlass.js; must not inherit into children. */
+@property --lg-filter {
+    syntax: '*';
+    inherits: false;
 }
 
 * {
@@ -20,6 +56,7 @@
 
 html {
     scroll-behavior: smooth;
+    -webkit-text-size-adjust: 100%;
 }
 
 body {
@@ -27,18 +64,90 @@ body {
     color: var(--ink-dark);
     min-height: 100vh;
     overflow-x: hidden;
+    -webkit-tap-highlight-color: transparent;
+    background: linear-gradient(180deg, #f1f7fb 0%, #dcebf5 36%, var(--powder) 78%, var(--powder-2) 100%) fixed;
+}
+
+:focus-visible {
+    outline: 2px solid var(--powder-deep);
+    outline-offset: 3px;
+}
+
+/* ------- sky -------
+   Soft light and faint rain streaks. Glass only looks like glass when there is
+   something behind it to bend, and a plain gradient gives it nothing. */
+.sky {
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    overflow: hidden;
+    pointer-events: none;
     background:
-        radial-gradient(1100px 460px at 50% -8%, rgba(255, 255, 255, 0.7), transparent 62%),
-        linear-gradient(180deg, #e7f1f8 0%, var(--powder) 32%, var(--powder-2) 74%, var(--powder-3) 100%);
+        repeating-linear-gradient(90deg, rgba(255, 255, 255, 0.22) 0 1px, transparent 1px 46px),
+        repeating-linear-gradient(90deg, rgba(95, 143, 184, 0.07) 0 1px, transparent 1px 73px);
+}
+
+.sky::before,
+.sky::after {
+    content: "";
+    position: absolute;
+    inset: -30%;
+    will-change: transform;
+    animation: drift 34s ease-in-out infinite alternate;
+    background:
+        radial-gradient(22vmax 22vmax at 22% 28%, rgba(255, 255, 255, 0.62), transparent 70%),
+        radial-gradient(16vmax 16vmax at 72% 20%, rgba(255, 255, 255, 0.42), transparent 70%),
+        radial-gradient(26vmax 26vmax at 80% 66%, rgba(95, 143, 184, 0.28), transparent 70%);
+}
+
+.sky::after {
+    animation-duration: 46s;
+    animation-direction: alternate-reverse;
+    background:
+        radial-gradient(20vmax 20vmax at 34% 74%, rgba(255, 255, 255, 0.46), transparent 70%),
+        radial-gradient(18vmax 18vmax at 56% 44%, rgba(95, 143, 184, 0.2), transparent 70%);
+}
+
+@keyframes drift {
+    from { transform: translate3d(-6%, -3%, 0); }
+    to   { transform: translate3d(6%, 4%, 0); }
 }
 
 .stage {
     max-width: 760px;
     margin: 0 auto;
-    padding: 9vh 22px 64px;
+    padding: 11vh 24px 72px;
     text-align: center;
     position: relative;
     z-index: 2;
+}
+
+/* ------- glass -------
+   Real refraction where liquidGlass.js runs (--lg-filter), frost elsewhere. The
+   rim and inner glow apply everywhere, so it still reads as glass either way. */
+.glass {
+    position: relative;
+    border: 1px solid transparent;
+    background: linear-gradient(150deg, rgba(255, 255, 255, 0.4), rgba(255, 255, 255, 0.16) 48%, rgba(255, 255, 255, 0.3));
+    -webkit-backdrop-filter: var(--lg-filter, var(--frost));
+    backdrop-filter: var(--lg-filter, var(--frost));
+    box-shadow:
+        inset 0 1px 1px rgba(255, 255, 255, 0.85),
+        inset 0 -1px 1px rgba(255, 255, 255, 0.35),
+        inset 0 0 10px rgba(255, 255, 255, 0.25),
+        0 8px 22px rgba(70, 110, 140, 0.2);
+}
+
+.glass::after {
+    content: "";
+    position: absolute;
+    inset: -1px;
+    border-radius: inherit;
+    padding: 1px;
+    pointer-events: none;
+    background: linear-gradient(130deg, #fff, rgba(255, 255, 255, 0.2) 32%, rgba(255, 255, 255, 0.12) 64%, rgba(255, 255, 255, 0.8));
+    -webkit-mask: linear-gradient(#000 0 0) content-box exclude, linear-gradient(#000 0 0);
+    mask: linear-gradient(#000 0 0) content-box exclude, linear-gradient(#000 0 0);
 }
 
 /* ------- entrance ------- */
@@ -57,12 +166,12 @@ body {
     user-select: none;
     -webkit-user-select: none;
     animation: rise 1.6s cubic-bezier(0.22, 1, 0.36, 1) both;
-    margin-bottom: 34px;
+    margin-bottom: 40px;
 }
 
 .bouquet {
     animation: rise 1.8s 0.35s cubic-bezier(0.22, 1, 0.36, 1) both;
-    margin: 4px auto 46px;
+    margin: 0 auto 64px;
 }
 
 .message {
@@ -79,190 +188,101 @@ body {
 
 /* ------- intro ------- */
 .eyebrow {
-    display: inline-block;
-    padding: 8px 18px;
-    border-radius: 999px;
-    background: rgba(255, 255, 255, 0.38);
-    border: 1px solid rgba(255, 255, 255, 0.6);
-    backdrop-filter: blur(8px);
-    -webkit-backdrop-filter: blur(8px);
+    font-family: var(--mono);
     font-size: 12px;
-    letter-spacing: 0.34em;
+    letter-spacing: 0.22em;
     text-transform: uppercase;
     color: var(--ink-soft);
-    margin-bottom: 20px;
+    margin-bottom: 14px;
 }
 
 .title {
     font-family: "Cormorant Garamond", serif;
-    font-weight: 500;
-    font-size: clamp(54px, 11vw, 92px);
-    line-height: 1.02;
+    font-weight: 400;
+    font-size: clamp(72px, 16vw, 148px);
+    line-height: 0.95;
+    letter-spacing: -0.02em;
     color: var(--ink-dark);
+    touch-action: manipulation;
 }
 
 .title em {
     font-style: italic;
-    background: linear-gradient(120deg, var(--powder-deep), #6ea7cc 55%, #9dc6e2);
-    -webkit-background-clip: text;
-    background-clip: text;
-    -webkit-text-fill-color: transparent;
+    color: #2f6a9f;
 }
 
 .from {
-    margin-top: 16px;
-    font-size: 17px;
-    font-weight: 300;
+    margin-top: 18px;
+    font-family: var(--mono);
+    font-size: 12px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
     color: var(--ink-soft);
 }
 
 .from .ketty {
-    font-family: "Cormorant Garamond", serif;
-    font-size: 22px;
-    font-style: italic;
     color: var(--ink-dark);
-    position: relative;
-}
-
-.from .ketty::after {
-    content: "";
-    position: absolute;
-    left: 0;
-    right: 0;
-    bottom: -5px;
-    height: 8px;
-    background: url("data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20width='64'%20height='8'%20viewBox='0%200%2064%208'%3E%3Cpath%20d='M2%206%20Q13%202%2024%206%20T62%206'%20stroke='%235f8fb8'%20stroke-width='2.6'%20fill='none'%20stroke-linecap='round'/%3E%3C/svg%3E") repeat-x;
-    opacity: 0.8;
-}
-
-.divider {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 14px;
-    margin: 20px 0 2px;
-}
-
-.d-line {
-    height: 1px;
-    flex: 1;
-    max-width: 130px;
-    background: linear-gradient(90deg, transparent, rgba(95, 143, 184, 0.5));
-}
-
-.d-line:last-child {
-    background: linear-gradient(90deg, rgba(95, 143, 184, 0.5), transparent);
-}
-
-.d-heart {
-    opacity: 0.9;
 }
 
 /* ------- bouquet ------- */
 .bouquet {
-    height: 380px;
     position: relative;
-    filter: drop-shadow(0 26px 30px rgba(60, 100, 130, 0.32));
+    width: min(460px, 100%);
+    aspect-ratio: 360 / 438;
 }
 
-.flower {
+.paint-defs {
     position: absolute;
-    bottom: 84px;
-    transform-origin: 50% 100%;
+}
+
+.layer {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    overflow: visible;
+}
+
+/* Every flower pivots on the ribbon's tie point, like stems held in a hand. */
+.flower {
+    transform-origin: 50% 74%;
     will-change: transform;
-    animation: sway var(--sway, 6s) ease-in-out infinite alternate;
-}
-
-.flower .stem {
-    stroke: #8fae9a;
-    stroke-width: 3;
-    fill: none;
-}
-
-.flower .leaf {
-    fill: #a9c3ab;
-}
-
-.flower .bloom {
-    transform-origin: 50% 50%;
-    animation: breathe var(--breathe, 5s) ease-in-out infinite alternate;
+    animation: sway 6s ease-in-out infinite alternate;
 }
 
 @keyframes sway {
-    from { transform: rotate(-6deg); }
-    to   { transform: rotate(6deg); }
+    from { transform: rotate(-1.4deg); }
+    to   { transform: rotate(1.4deg); }
 }
 
-@keyframes breathe {
-    from { transform: scale(1); }
-    to   { transform: scale(1.06); }
-}
-
-.bouquet-wrap {
-    position: absolute;
-    left: 50%;
-    bottom: 0;
-    transform: translateX(-50%);
-    width: 180px;
-    height: 140px;
-    z-index: 6;
-}
-
-.bouquet-wrap svg {
-    position: absolute;
-    left: 50%;
-    top: 0;
-    transform: translateX(-50%);
-}
-
-.spark {
-    position: absolute;
-    z-index: 7;
-    pointer-events: none;
-    filter: drop-shadow(0 0 6px rgba(255, 255, 255, 0.9));
-    animation: twinkle 2.6s ease-in-out infinite;
-}
-
-@keyframes twinkle {
-    0%, 100% { opacity: 0.25; transform: scale(0.55); }
-    50%      { opacity: 1; transform: scale(1); }
-}
-
-/* ------- message (box, same glass as the eyebrow chip) ------- */
+/* ------- message ------- */
 .message {
-    position: relative;
-    background: rgba(255, 255, 255, 0.38);
-    border: 1px solid rgba(255, 255, 255, 0.6);
-    backdrop-filter: blur(8px);
-    -webkit-backdrop-filter: blur(8px);
-    border-radius: 22px;
-    padding: 36px 30px;
-    margin-bottom: 46px;
-    box-shadow: 0 12px 32px rgba(70, 110, 140, 0.14);
+    border-radius: 28px;
+    padding: 48px clamp(24px, 6vw, 56px);
+    margin-bottom: 72px;
+    text-align: left;
 }
 
 .msg-body {
     position: relative;
     font-family: "Cormorant Garamond", serif;
-    font-size: clamp(20px, 4vw, 26px);
-    font-style: italic;
-    line-height: 1.62;
+    font-size: clamp(22px, 3.6vw, 29px);
+    line-height: 1.5;
     color: var(--ink-dark);
+    text-wrap: pretty;
 }
 
 .msg-body::first-letter {
-    font-family: "Cormorant Garamond", serif;
     font-size: 2.3em;
     line-height: 0.8;
     float: left;
     padding-right: 8px;
-    color: var(--powder-deep);
+    color: #2f6a9f;
 }
 
 /* ------- photo (polaroid) ------- */
 .photo-spot {
     margin-bottom: 52px;
-    perspective: 900px;
 }
 
 .photo-frame {
@@ -304,52 +324,57 @@ body {
 }
 
 .photo-note {
-    font-size: 12px;
-    letter-spacing: 0.22em;
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 0.14em;
     text-transform: uppercase;
     color: var(--ink-soft);
-    padding: 7px 14px;
-    border-radius: 999px;
-    background: rgba(255, 255, 255, 0.6);
-    backdrop-filter: blur(6px);
-    -webkit-backdrop-filter: blur(6px);
+    padding: 0;
 }
 
 .photo-caption {
-    margin-top: 16px;
-    font-size: 14px;
-    font-weight: 300;
-    font-style: italic;
+    margin-top: 22px;
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
     color: var(--ink-soft);
 }
 
 /* ------- footer ------- */
 .foot {
     padding-top: 8px;
-    font-size: 14px;
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
     color: var(--ink-soft);
-    opacity: 0.9;
+    touch-action: manipulation;
+}
+
+.no-js {
+    position: relative;
+    z-index: 3;
+    padding: 20px;
+    text-align: center;
 }
 
 /* ------- top-right buttons ------- */
 .music-toggle,
 .cake-toggle {
     position: fixed;
-    top: 20px;
+    top: max(20px, env(safe-area-inset-top));
     z-index: 20;
     width: 46px;
     height: 46px;
     border-radius: 50%;
-    border: 1px solid rgba(255, 255, 255, 0.6);
-    background: rgba(255, 255, 255, 0.45);
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
     color: var(--ink-dark);
+    font-family: inherit;
     cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: center;
-    box-shadow: 0 8px 22px rgba(70, 110, 140, 0.25);
+    touch-action: manipulation;
     transition: transform 0.3s ease, background 0.3s ease;
 }
 
@@ -359,20 +384,21 @@ body {
 
 .cake-toggle {
     right: 78px;
-    font-size: 20px;
 }
 
-.cake-toggle:hover {
-    transform: scale(1.12) rotate(-8deg);
-}
+@media (hover: hover) {
+    .cake-toggle:hover {
+        transform: scale(1.08);
+    }
 
-.music-toggle:hover {
-    transform: scale(1.08);
+    .music-toggle:hover {
+        transform: scale(1.08);
+    }
 }
 
 .music-toggle.playing,
 .cake-toggle.playing {
-    background: rgba(95, 143, 184, 0.85);
+    background: rgba(63, 115, 159, 0.72);
     color: #fff;
 }
 
@@ -387,85 +413,56 @@ body {
 /* ------- petals / hearts ------- */
 .fall {
     position: fixed;
-    top: -6vh;
+    top: 0;
     z-index: 1;
     pointer-events: none;
+    line-height: 1;
+    will-change: transform;
     animation-name: fall;
     animation-timing-function: linear;
-    animation-iteration-count: 1;
     animation-fill-mode: both;
+}
+
+.fall .drift {
+    opacity: 0.85;
+    display: block;
 }
 
 @keyframes fall {
     0% {
-        transform: translateY(-6vh) rotate(0deg);
+        transform: translateY(-40px) rotate(0deg);
         opacity: 0;
     }
     5% {
         opacity: 1;
     }
     100% {
-        transform: translateY(108vh) rotate(560deg);
+        transform: translateY(calc(100vh + 40px)) rotate(560deg);
         opacity: 0;
     }
 }
 
 @media (max-width: 480px) {
-    html {
-        -webkit-text-size-adjust: 100%;
-    }
-
-    body {
-        -webkit-tap-highlight-color: transparent;
-    }
-
     .stage {
         padding: 6vh 16px 48px;
     }
 
-    .title {
-        font-size: clamp(42px, 14vw, 62px);
-    }
-
     .eyebrow {
-        letter-spacing: 0.24em;
         font-size: 11px;
     }
 
-    .from {
-        font-size: 15px;
-    }
-
     .bouquet {
-        height: 290px;
-        margin-bottom: 36px;
-    }
-
-    .flower {
-        bottom: 66px;
-    }
-
-    .flower .bloom {
-        animation: none;
-    }
-
-    .message {
-        padding: 30px 20px;
-        margin-bottom: 36px;
-        border-radius: 18px;
-    }
-
-    .photo-spot {
         margin-bottom: 40px;
     }
 
-    .photo-caption {
-        margin-top: 12px;
+    .message {
+        margin-bottom: 52px;
+        border-radius: 22px;
     }
 
     .music-toggle,
     .cake-toggle {
-        top: 12px;
+        top: max(12px, env(safe-area-inset-top));
         width: 42px;
         height: 42px;
     }
@@ -476,5 +473,18 @@ body {
 
     .cake-toggle {
         right: 64px;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    html {
+        scroll-behavior: auto;
+    }
+
+    *,
+    *::before,
+    *::after {
+        animation: none !important;
+        transition: none !important;
     }
 }
