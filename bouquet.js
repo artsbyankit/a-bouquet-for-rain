@@ -1,8 +1,8 @@
-/* The bouquet, painted in code: watercolor washes with inked outlines. Every
-   stem meets at the point where the ribbon ties them. Each swaying flower is its
-   own <svg> layer, so the costly paint filter runs once and the GPU just rotates
-   the result. Layouts are fixed, so it looks the same on every visit; rearrange
-   it with the BLOOMS and SPRIGS tables. */
+/* The bouquet, painted in code: watercolor washes with inked outlines, and a
+   new arrangement on every load. Fixed slots keep the composition balanced; each
+   slot draws a random flower and color. Every stem meets where the ribbon ties
+   them. Each swaying flower is its own <svg> layer, so the costly paint filter
+   runs once and the GPU just rotates the result. */
 
 const VIEW = { width: 360, height: 438, top: -8 };
 const TIE = { x: 180, y: 316 };
@@ -10,35 +10,70 @@ const INK = '#26415a';
 
 const PALETTES = {
     white: { tip: '#ffffff', base: '#cfe0ee', deep: '#9dbdd6', core: '#26415a', stamen: '#d9a94f' },
+    powder: { tip: '#eef7fc', base: '#bcd8ea', deep: '#8fb8d4', core: '#26415a', stamen: '#efd9a3' },
     sky: { tip: '#d8ecf9', base: '#8dbcdf', deep: '#5f96c4', core: '#1f3550', stamen: '#efd9a3' },
     blue: { tip: '#a9cfea', base: '#5b92c1', deep: '#2f6a9f', core: '#f4e2b4', stamen: '#d9a94f' },
-    rose: { tip: '#fdf0f4', base: '#eeb9cf', deep: '#cf7fa3', core: '#e7a93c', stamen: '#7d4a63' },
+    pink: { tip: '#fdf0f4', base: '#eeb9cf', deep: '#cf7fa3', core: '#e7a93c', stamen: '#7d4a63' },
+    yellow: { tip: '#fff9dc', base: '#f7e08f', deep: '#e3b64a', core: '#a8701c', stamen: '#6e4a12' },
+    red: { tip: '#f39a93', base: '#d9534f', deep: '#a82d33', core: '#2a1a24', stamen: '#efd9a3' },
     cream: { tip: '#fffbf2', base: '#f3e2bb', deep: '#dcbc7d', core: '#d98f2b', stamen: '#8a5a1c' },
 };
 
-// x, y: bloom centre. size: radius. Listed back to front.
-const BLOOMS = [
-    { kind: 'daisy', palette: 'cream', x: 58, y: 166, size: 30, turn: 10, sway: 7.6 },
-    { kind: 'daisy', palette: 'cream', x: 302, y: 158, size: 30, turn: -8, sway: 7.8 },
-    { kind: 'anemone', palette: 'sky', x: 106, y: 86, size: 42, turn: -14, sway: 7.1 },
-    { kind: 'peony', palette: 'white', x: 254, y: 82, size: 46, turn: 12, sway: 6.6 },
-    { kind: 'peony', palette: 'blue', x: 178, y: 48, size: 44, turn: 0, sway: 6.0 },
-    { kind: 'anemone', palette: 'white', x: 98, y: 180, size: 42, turn: 16, sway: 5.8 },
-    { kind: 'anemone', palette: 'sky', x: 262, y: 176, size: 42, turn: -12, sway: 6.2 },
-    { kind: 'peony', palette: 'rose', x: 180, y: 136, size: 56, turn: 6, sway: 5.4 },
+// How often each color is drawn: mostly blues and white, with warm accents.
+const COLOR_WEIGHTS = { sky: 3, powder: 3, white: 3, blue: 1.5, pink: 2, yellow: 1, red: 1, cream: 1 };
+const MAX_OF_ONE_COLOR = 3;
+
+const random = (min, max) => min + Math.random() * (max - min);
+
+function shuffled(list) {
+    const out = [...list];
+    for (let i = out.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [out[i], out[j]] = [out[j], out[i]];
+    }
+    return out;
+}
+
+function pickColors(count) {
+    const used = {};
+    const colors = [];
+    while (colors.length < count) {
+        const names = Object.keys(COLOR_WEIGHTS).filter((n) => (used[n] || 0) < MAX_OF_ONE_COLOR);
+        let roll = Math.random() * names.reduce((sum, n) => sum + COLOR_WEIGHTS[n], 0);
+        const name = names.find((n) => (roll -= COLOR_WEIGHTS[n]) < 0) || names[0];
+        used[name] = (used[name] || 0) + 1;
+        colors.push(name);
+    }
+    return colors;
+}
+
+// Where blooms sit, listed back to front. x, y: centre. size: radius. open slots
+// aren't covered by anything in front, which a slim side-on tulip needs.
+const BLOOM_SLOTS = [
+    { x: 58, y: 166, size: 30 },
+    { x: 302, y: 158, size: 30 },
+    { x: 106, y: 86, size: 42, open: true },
+    { x: 254, y: 82, size: 44, open: true },
+    { x: 178, y: 48, size: 44, open: true },
+    { x: 98, y: 180, size: 42 },
+    { x: 262, y: 176, size: 42 },
+    { x: 180, y: 136, size: 56, hero: true },
 ];
 
-// Greenery and baby's breath, tucked in behind the blooms.
-const SPRIGS = [
-    { kind: 'leaves', x: 22, y: 88, sway: 8.2 },
-    { kind: 'leaves', x: 338, y: 84, sway: 8.4 },
-    { kind: 'leaves', x: 138, y: 2, sway: 7.4 },
-    { kind: 'leaves', x: 228, y: 0, sway: 7.2 },
-    { kind: 'breath', x: 56, y: 44, sway: 6.9 },
-    { kind: 'breath', x: 308, y: 38, sway: 7.0 },
-    { kind: 'breath', x: 18, y: 208, sway: 6.4 },
-    { kind: 'breath', x: 342, y: 212, sway: 6.5 },
+// Greenery and fillers, tucked in behind the blooms. lift arches a low stem upward
+// so it leaves through the wrap's opening rather than behind its side.
+const SPRIG_SLOTS = [
+    { x: 22, y: 88 },
+    { x: 338, y: 84 },
+    { x: 138, y: 2 },
+    { x: 228, y: 0 },
+    { x: 56, y: 44 },
+    { x: 308, y: 38 },
+    { x: 16, y: 200, lift: 52 },
+    { x: 344, y: 204, lift: 52 },
 ];
+
+const SPRIG_KINDS = ['leaves', 'breath', 'lavender', 'berries'];
 
 const round = (n) => Math.round(n * 100) / 100;
 
@@ -80,6 +115,17 @@ function stamens(count, radius, size, fill) {
 const wash = (name) => `url(#wash-${name})`;
 const heart = (name) => `url(#heart-${name})`;
 
+// A narrow petal that tapers to a point, with a center line.
+function pointedRing(count, length, width, offset, fill, name) {
+    let out = '';
+    for (let i = 0; i < count; i++) {
+        const l = round(length);
+        const w = round(width);
+        out += `<g transform="rotate(${round(offset + (360 / count) * i)})"><path d="M0 0 C${w} ${round(-l * 0.3)} ${w} ${round(-l * 0.7)} 0 ${-l} C${-w} ${round(-l * 0.7)} ${-w} ${round(-l * 0.3)} 0 0Z" fill="${fill}" stroke="${INK}" stroke-width="0.8" stroke-linejoin="round"/><path d="M0 ${round(-l * 0.12)} L0 ${round(-l * 0.8)}" stroke="${PALETTES[name].deep}" stroke-width="0.6" opacity="0.8"/></g>`;
+    }
+    return out;
+}
+
 const DRAW = {
     peony(r, name) {
         const p = PALETTES[name];
@@ -103,14 +149,74 @@ const DRAW = {
             + `<circle r="${round(r * 0.27)}" fill="${p.core}" stroke="${INK}" stroke-width="0.6"/>`
             + stamens(10, r * 0.15, 0.8, p.stamen);
     },
+    rose(r, name) {
+        const p = PALETTES[name];
+        let spiral = '';
+        for (const [ring_, size, rot] of [[0.62, 0.3, 12], [0.44, 0.24, 40], [0.28, 0.17, 70]]) {
+            spiral += ring(3, r * ring_, r * size, rot, heart(name), name);
+        }
+        return ring(6, r, r * 0.6, 0, wash(name), name, 2)
+            + ring(5, r * 0.8, r * 0.46, 30, wash(name), name)
+            + spiral
+            + `<path d="M${round(-r * 0.07)} 0 A${round(r * 0.07)} ${round(r * 0.07)} 0 1 1 ${round(r * 0.05)} ${round(r * 0.05)}" fill="none" stroke="${INK}" stroke-width="0.8" stroke-linecap="round"/><circle r="${round(r * 0.02)}" fill="${p.deep}"/>`;
+    },
+    poppy(r, name) {
+        const p = PALETTES[name];
+        return ring(3, r, r * 0.72, 0, wash(name), name, 3)
+            + ring(3, r * 0.84, r * 0.66, 60, wash(name), name, 3)
+            + stamens(24, r * 0.3, 0.9, p.core)
+            + `<circle r="${round(r * 0.17)}" fill="${p.stamen}" stroke="${INK}" stroke-width="0.6"/><path d="M${round(-r * 0.12)} 0 H${round(r * 0.12)} M0 ${round(-r * 0.12)} V${round(r * 0.12)}" stroke="${INK}" stroke-width="0.5"/>`;
+    },
+    cosmos(r, name) {
+        const p = PALETTES[name];
+        return ring(8, r, r * 0.34, 0, wash(name), name, 3)
+            + stamens(14, r * 0.14, 0.9, '#e7a93c')
+            + `<circle r="${round(r * 0.1)}" fill="${p.deep}" stroke="${INK}" stroke-width="0.5"/>`;
+    },
+    ranunculus(r, name) {
+        let out = '';
+        const rings = [[12, 1, 0.34], [11, 0.84, 0.3], [10, 0.68, 0.27], [8, 0.52, 0.22], [7, 0.37, 0.17], [5, 0.23, 0.12]];
+        rings.forEach(([count, length, width], i) => {
+            out += ring(count, r * length, r * width, i * 13, i < 3 ? wash(name) : heart(name), name);
+        });
+        return out + `<circle r="${round(r * 0.06)}" fill="#a0bda4" stroke="${INK}" stroke-width="0.5"/>`;
+    },
+    hydrangea(r, name) {
+        // Many small four-petal florets packed into a dome.
+        const p = PALETTES[name];
+        let out = `<circle r="${round(r * 0.8)}" fill="${p.deep}" opacity="0.5"/>`;
+        const floret = (x, y, size, turn) => `<g transform="translate(${round(x)} ${round(y)}) rotate(${turn})">${ring(4, size, size * 0.62, 0, wash(name), name)}<circle r="${round(size * 0.15)}" fill="${p.stamen}" stroke="${INK}" stroke-width="0.3"/></g>`;
+        for (const [count, dist] of [[11, 0.74], [8, 0.42], [1, 0]]) {
+            for (let i = 0; i < count; i++) {
+                const a = (Math.PI * 2 * i) / count + dist;
+                out += floret(Math.cos(a) * r * dist, Math.sin(a) * r * dist, r * 0.27, (i * 37) % 90);
+            }
+        }
+        return out;
+    },
+    lily(r, name) {
+        const p = PALETTES[name];
+        return pointedRing(3, r, r * 0.27, 60, wash(name), name)
+            + pointedRing(3, r * 1.04, r * 0.24, 0, wash(name), name)
+            + stamens(6, r * 0.36, 1.5, p.core)
+            + `<circle r="${round(r * 0.08)}" fill="#a0bda4" stroke="${INK}" stroke-width="0.5"/>`;
+    },
+    tulip(r, name) {
+        // Drawn from the side, so it's rotated to continue its stem.
+        const w = round(r * 0.56);
+        const h = round(r * 1.1);
+        const base = round(r * 0.5);
+        const side = (flip) => `<path d="M0 ${base} C${flip * w * 1.2} ${base} ${flip * w * 1.1} ${round(-h * 0.45)} ${flip * w * 0.82} ${-h} C${flip * w * 0.4} ${round(-h * 0.76)} ${flip * w * 0.2} ${round(-h * 0.5)} 0 ${round(-h * 0.2)}Z" fill="${wash(name)}" stroke="${INK}" stroke-width="0.85" stroke-linejoin="round"/>`;
+        return `<path d="M0 ${base} C${round(-w * 0.8)} ${round(r * 0.2)} ${round(-w * 0.62)} ${round(-h * 0.7)} 0 ${round(-h * 1.08)} C${round(w * 0.62)} ${round(-h * 0.7)} ${round(w * 0.8)} ${round(r * 0.2)} 0 ${base}Z" fill="${heart(name)}" stroke="${INK}" stroke-width="0.85" stroke-linejoin="round"/>` + side(-1) + side(1);
+    },
 };
 
-function curve(x, y) {
-    return { cx: TIE.x + (x - TIE.x) * 0.25, cy: (y + TIE.y) / 2 + 26 };
+function curve(x, y, lift = 0) {
+    return { cx: TIE.x + (x - TIE.x) * 0.25, cy: (y + TIE.y) / 2 + 26 - lift };
 }
 
-function stem(x, y, width) {
-    const { cx, cy } = curve(x, y);
+function stem(x, y, width, lift) {
+    const { cx, cy } = curve(x, y, lift);
     return `<path d="M${TIE.x} ${TIE.y} Q${round(cx)} ${round(cy)} ${x} ${y}" stroke="#7f9e88" stroke-width="${width}" fill="none" stroke-linecap="round"/>
         <path d="M${TIE.x + 0.8} ${TIE.y} Q${round(cx + 0.8)} ${round(cy)} ${x + 0.8} ${y}" stroke="${INK}" stroke-width="0.45" fill="none" opacity="0.6"/>`;
 }
@@ -125,8 +231,8 @@ function leaf(x, y, angle, scale) {
 }
 
 // Leaf pairs along the curve the stem follows, from its tip back toward the tie.
-function foliage({ x, y }) {
-    const { cx, cy } = curve(x, y);
+function foliage({ x, y, lift }) {
+    const { cx, cy } = curve(x, y, lift);
     const tipAngle = Math.atan2(x - cx, cy - y) * 180 / Math.PI;
     let out = leaf(x, y, tipAngle, 1);
     for (const t of [0.12, 0.26, 0.4, 0.54]) {
@@ -139,10 +245,40 @@ function foliage({ x, y }) {
     return out;
 }
 
-function breath({ x, y }) {
-    const dots = [[0, 0, 3.4], [-9, 6, 2.8], [8, 7, 3], [-3, -9, 2.6], [11, -6, 2.4], [-12, -5, 2.2], [3, 13, 2.4], [-6, 15, 2], [14, 4, 1.9], [-15, 2, 1.8]];
-    return dots.map(([dx, dy, r]) => `<path d="M${x} ${y + 20} L${x + dx} ${y + dy}" stroke="#7f9e88" stroke-width="0.5"/><circle cx="${x + dx}" cy="${y + dy}" r="${r}" fill="#ffffff" stroke="${INK}" stroke-width="0.5"/>`).join('');
+// A spray of tiny flowers on fine twigs, growing from the stem's tip along its direction.
+function breath({ x, y, lift }) {
+    const { cx, cy } = curve(x, y, lift);
+    const angle = Math.atan2(x - cx, cy - y) * 180 / Math.PI;
+    const dots = [[0, -22, 3.4], [-9, -15, 2.8], [8, -14, 3], [-3, -30, 2.6], [11, -26, 2.4], [-12, -26, 2.2], [3, -9, 2.4], [-5, -7, 2], [15, -18, 1.9], [-16, -18, 1.8]];
+    const art = dots.map(([dx, dy, r]) => `<path d="M0 0 L${dx} ${dy}" stroke="#7f9e88" stroke-width="0.5"/><circle cx="${dx}" cy="${dy}" r="${r}" fill="#ffffff" stroke="${INK}" stroke-width="0.5"/>`).join('');
+    return `<g transform="translate(${x} ${y}) rotate(${round(angle)})">${art}</g>`;
 }
+
+function tipAngle({ x, y, lift }) {
+    const { cx, cy } = curve(x, y, lift);
+    return round(Math.atan2(x - cx, cy - y) * 180 / Math.PI);
+}
+
+// A spike of tiny buds that narrows toward its tip.
+function lavender(slot) {
+    let buds = '';
+    for (let i = 0; i < 9; i++) {
+        const spread = 4.2 - i * 0.34;
+        for (const side of [-1, 1]) {
+            buds += `<ellipse cx="${round(side * spread)}" cy="${-3 - i * 3.4}" rx="2.3" ry="3" transform="rotate(${side * 22} ${round(side * spread)} ${-3 - i * 3.4})" fill="#b7a7dc" stroke="${INK}" stroke-width="0.4"/>`;
+        }
+    }
+    return `<g transform="translate(${slot.x} ${slot.y}) rotate(${tipAngle(slot)})"><path d="M0 0 L0 -34" stroke="#7f9e88" stroke-width="1"/>${buds}</g>`;
+}
+
+// A little branch of round berries.
+function berries(slot) {
+    const spots = [[0, -22, 3.6], [-8, -16, 3.2], [8, -15, 3.4], [-3, -10, 2.8], [12, -24, 2.8], [-12, -25, 2.8]];
+    const art = spots.map(([dx, dy, r]) => `<path d="M0 0 L${dx} ${dy}" stroke="#7f9e88" stroke-width="0.6"/><circle cx="${dx}" cy="${dy}" r="${r}" fill="#5f8fb8" stroke="${INK}" stroke-width="0.5"/><circle cx="${round(dx - r * 0.3)}" cy="${round(dy - r * 0.3)}" r="${round(r * 0.25)}" fill="#ffffff" opacity="0.7"/>`).join('');
+    return `<g transform="translate(${slot.x} ${slot.y}) rotate(${tipAngle(slot)})">${art}</g>`;
+}
+
+const SPRIG_ART = { leaves: foliage, breath, lavender, berries };
 
 // Shared paint: gradients, and two filters that wobble the line like a hand-drawn
 // pen and mottle the colour like pigment settling in wet paper.
@@ -158,7 +294,7 @@ function paintDefs() {
         <linearGradient id="paper-back" x1="0" y1="0" x2="0" y2="1">${stops('#d7e7f2', '#a7c8de', '#8fb8d4')}</linearGradient>
         <linearGradient id="ribbon" x1="0" y1="0" x2="0" y2="1">${stops('#fbf1d9', '#f0dcae', '#dcbc7d')}</linearGradient>
         <filter id="painted" x="-8%" y="-8%" width="116%" height="116%" color-interpolation-filters="sRGB">
-            <feTurbulence type="fractalNoise" baseFrequency="0.035" numOctaves="3" seed="7" result="warp"/>
+            <feTurbulence type="fractalNoise" baseFrequency="0.035" numOctaves="3" seed="${Math.floor(random(1, 999))}" result="warp"/>
             <feDisplacementMap in="SourceGraphic" in2="warp" scale="3.2" xChannelSelector="R" yChannelSelector="G" result="drawn"/>
             <feTurbulence type="fractalNoise" baseFrequency="0.09" numOctaves="4" seed="21" result="grain"/>
             <feColorMatrix in="grain" type="matrix" values="0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  1.6 0 0 0 -0.55" result="pigment"/>
@@ -187,21 +323,49 @@ const RIBBON = `
 
 const SHADOW = '<ellipse cx="180" cy="420" rx="62" ry="7" fill="rgba(38, 65, 90, 0.16)"/>';
 
+// The hero is the big front flower, so it needs a full, round face.
+const HERO_KINDS = ['peony', 'rose', 'ranunculus', 'hydrangea', 'anemone', 'poppy'];
+const KIND_SCALE = { tulip: 0.86, daisy: 0.92, lily: 1.1 };
+
+function pickKinds(slots) {
+    const kinds = shuffled(Object.keys(DRAW));
+    const hero = shuffled(HERO_KINDS)[0];
+    const rest = kinds.filter((k) => k !== hero);
+    let next = 0;
+    const picks = slots.map((slot) => (slot.hero ? hero : rest[next++ % rest.length]));
+    const tulip = picks.indexOf('tulip');
+    if (tulip >= 0 && !slots[tulip].open) {
+        const open = shuffled(slots.map((slot, i) => (slot.open ? i : -1)).filter((i) => i >= 0))[0];
+        [picks[tulip], picks[open]] = [picks[open], picks[tulip]];
+    }
+    return picks;
+}
+
 export function buildBouquet(host) {
-    const sprigs = SPRIGS.map((s) => ({
-        sway: s.sway,
-        art: s.kind === 'leaves' ? stem(s.x, s.y, 1.5) + foliage(s) : stem(s.x, s.y, 1) + breath(s),
+    const sprigKinds = shuffled([...SPRIG_KINDS, ...SPRIG_KINDS]);
+    const sprigs = SPRIG_SLOTS.map((slot, i) => ({
+        sway: random(6.4, 8.4),
+        art: stem(slot.x, slot.y, 1.2, slot.lift) + SPRIG_ART[sprigKinds[i]](slot),
     }));
-    const blooms = BLOOMS.map((b) => ({
-        sway: b.sway,
-        art: `${stem(b.x, b.y, 2.4)}<g transform="translate(${b.x} ${b.y}) rotate(${b.turn})">${DRAW[b.kind](b.size, b.palette)}</g>`,
-    }));
+
+    const kinds = pickKinds(BLOOM_SLOTS);
+    const colors = pickColors(BLOOM_SLOTS.length);
+    const blooms = BLOOM_SLOTS.map((slot, i) => {
+        const x = Math.round(slot.x + random(-5, 5));
+        const y = Math.round(slot.y + random(-5, 5));
+        const kind = kinds[i];
+        const turn = kind === 'tulip' ? tipAngle({ x, y }) : Math.round(random(-30, 30));
+        return {
+            sway: random(5.4, 7.8),
+            art: `${stem(x, y, 2.4)}<g transform="translate(${x} ${y}) rotate(${turn})">${DRAW[kind](slot.size * (KIND_SCALE[kind] || 1), colors[i])}</g>`,
+        };
+    });
     const flowers = [...sprigs, ...blooms];
 
     host.innerHTML = `${paintDefs()}
         ${layer('layer', SHADOW + WRAP_BACK)}
         ${flowers.map((f) => layer('layer flower', f.art)).join('')}
-        ${layer('layer', WRAP_FRONT + RIBBON, 'A hand-tied bouquet of blue, white and rose flowers, wrapped in pale paper and tied with a cream ribbon')}`;
+        ${layer('layer', WRAP_FRONT + RIBBON, 'A hand-tied bouquet of mixed flowers, wrapped in pale paper and tied with a cream ribbon')}`;
 
     // Timing goes through CSSOM so the Content-Security-Policy can forbid inline styles.
     host.querySelectorAll('.flower').forEach((el, i) => {
