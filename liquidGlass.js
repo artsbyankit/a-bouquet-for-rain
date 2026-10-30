@@ -25,7 +25,7 @@ const OPTICS = {
 }
 const BEZEL_MIN = 6
 const BEZEL_MAX = 28
-const SMALL_AREA = 60000 // px², below this a surface can afford dispersion
+const SMALL_AREA = 300000 // px², below this a surface can afford dispersion (this page has few, so the message qualifies)
 const HALF_RES_AREA = 200000 // px², above this the map is built at half size
 const RESIZE_SETTLE_MS = 140 // wait out animations like the dock swell
 const MAX_FILTERS = 80
