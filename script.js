@@ -1,12 +1,13 @@
 import { buildBouquet } from './bouquet.js';
-import { flowerRain, setupCelebration, startAmbientFall } from './falling.js';
+import { flowerRain, setupCelebration, startAmbientFall, startPetalShed } from './falling.js';
 import { initLiquidGlass } from './liquidGlass.js';
 import { createMusic } from './music.js';
 
 const bouquet = document.getElementById('bouquet');
-buildBouquet(bouquet);
+const placed = buildBouquet(bouquet);
 initLiquidGlass();
 startAmbientFall();
+startPetalShed(bouquet, placed);
 setupCelebration(); // May 9 only for now; pass a button to bring back the toggle
 
 new IntersectionObserver(([entry]) => {

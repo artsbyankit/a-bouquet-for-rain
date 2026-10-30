@@ -248,9 +248,39 @@ body {
     animation-play-state: paused;
 }
 
+/* Uneven on purpose: a push, a small settle, then a longer lean, like a breeze. */
 @keyframes sway {
-    from { transform: rotate(-1.4deg); }
-    to   { transform: rotate(1.4deg); }
+    0%   { transform: rotate(-1.6deg); }
+    35%  { transform: rotate(0.7deg); }
+    58%  { transform: rotate(0.1deg); }
+    100% { transform: rotate(1.8deg); }
+}
+
+.shed {
+    position: absolute;
+    pointer-events: none;
+    line-height: 0;
+    animation: petal-drift 8s ease-in forwards;
+}
+
+@keyframes petal-drift {
+    0% {
+        transform: translate(0, 0) rotate(0deg);
+        opacity: 0;
+    }
+    8% {
+        opacity: 0.95;
+    }
+    35% {
+        transform: translate(calc(var(--dx) * 0.5), calc(var(--dy) * 0.22)) rotate(calc(var(--spin) * 0.35));
+    }
+    65% {
+        transform: translate(calc(var(--dx) * 0.62), calc(var(--dy) * 0.6)) rotate(calc(var(--spin) * 0.65));
+    }
+    100% {
+        transform: translate(var(--dx), var(--dy)) rotate(var(--spin));
+        opacity: 0;
+    }
 }
 
 /* ------- message ------- */
