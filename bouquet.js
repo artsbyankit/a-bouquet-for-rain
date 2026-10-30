@@ -47,47 +47,46 @@ function pickColors(count, limit = MAX_OF_ONE_COLOR) {
     return colors;
 }
 
-// Where blooms sit, listed back to front. x, y: centre. size: radius. open slots
-// aren't covered by anything in front, which a slim side-on tulip needs.
+// Where flowers sit, spaced so they touch without piling up. Big ones are at the
+// back, then medium, small and tiny toward the viewer. x, y: centre. size: radius.
+// open slots aren't covered by anything, which a slim side-on tulip needs.
 const BLOOM_SLOTS = [
-    { x: 58, y: 166, size: 30 },
-    { x: 302, y: 158, size: 30 },
-    { x: 106, y: 86, size: 42, open: true },
-    { x: 254, y: 82, size: 44, open: true },
-    { x: 178, y: 48, size: 44, open: true },
-    { x: 98, y: 180, size: 42 },
-    { x: 262, y: 176, size: 42 },
-    { x: 180, y: 136, size: 56, hero: true },
+    { x: 180, y: 62, size: 42, open: true },
+    { x: 104, y: 100, size: 38, open: true },
+    { x: 256, y: 98, size: 38, open: true },
+    { x: 96, y: 178, size: 36 },
+    { x: 264, y: 178, size: 36 },
+    { x: 180, y: 146, size: 48, hero: true },
 ];
 
-// Smaller flowers that fill the gaps. front ones sit ahead of the main blooms,
-// the rest tuck in behind them. Each tier gets its own mix of flowers.
 const MEDIUM_SLOTS = [
-    { x: 56, y: 110, size: 28 },
-    { x: 306, y: 106, size: 28 },
-    { x: 124, y: 138, size: 28 },
-    { x: 238, y: 132, size: 28 },
-    { x: 138, y: 214, size: 30, front: true },
-    { x: 224, y: 216, size: 30, front: true },
+    { x: 48, y: 130, size: 24 },
+    { x: 312, y: 128, size: 24 },
+    { x: 116, y: 38, size: 22 },
+    { x: 244, y: 36, size: 22 },
+    { x: 140, y: 218, size: 22 },
+    { x: 222, y: 218, size: 22 },
 ];
 
 const SMALL_SLOTS = [
-    { x: 26, y: 150, size: 18 },
-    { x: 334, y: 146, size: 18 },
-    { x: 82, y: 38, size: 18 },
-    { x: 280, y: 30, size: 18 },
-    { x: 140, y: 12, size: 18 },
-    { x: 220, y: 10, size: 18 },
-    { x: 60, y: 208, size: 19 },
-    { x: 302, y: 206, size: 19 },
-    { x: 180, y: 204, size: 22, front: true },
+    { x: 56, y: 80, size: 14 },
+    { x: 304, y: 78, size: 14 },
+    { x: 38, y: 180, size: 14 },
+    { x: 322, y: 180, size: 14 },
+    { x: 181, y: 212, size: 15 },
+    { x: 64, y: 216, size: 13 },
+    { x: 296, y: 216, size: 13 },
 ];
 
 const TINY_SLOTS = [
-    { x: 136, y: 50 }, { x: 222, y: 42 }, { x: 154, y: 96 }, { x: 208, y: 92 },
-    { x: 68, y: 70 }, { x: 296, y: 66 }, { x: 40, y: 182 }, { x: 322, y: 178 },
-    { x: 104, y: 124 }, { x: 258, y: 122 }, { x: 110, y: 222 }, { x: 252, y: 224 },
-    { x: 170, y: 16 }, { x: 196, y: 26 },
+    { x: 142, y: 112 },
+    { x: 218, y: 110 },
+    { x: 180, y: 11 },
+    { x: 150, y: 14 },
+    { x: 211, y: 12 },
+    { x: 24, y: 106 },
+    { x: 336, y: 104 },
+    { x: 86, y: 54 },
 ];
 
 const MEDIUM_KINDS = ['anemone', 'daisy', 'cosmos', 'ranunculus', 'poppy', 'rose', 'lily', 'peony'];
@@ -380,64 +379,66 @@ function pickKinds(slots) {
     return picks;
 }
 
-function drawBloom(slot, kind, color, stemWidth) {
-    const x = Math.round(slot.x + random(-4, 4));
-    const y = Math.round(slot.y + random(-4, 4));
-    const turn = kind === 'tulip' ? tipAngle({ x, y }) : Math.round(random(-30, 30));
-    return `${stem(x, y, stemWidth)}<g transform="translate(${x} ${y}) rotate(${turn})">${DRAW[kind](slot.size * (KIND_SCALE[kind] || 1), color)}</g>`;
-}
-
-// The smallest pieces share layers: nobody can tell them apart in motion, and
-// every layer costs memory.
-function grouped(items, groups) {
-    const out = Array.from({ length: groups }, () => ({ sway: random(5.8, 8), art: '' }));
-    items.forEach((art, i) => {
-        out[i % groups].art += art;
-    });
-    return out;
-}
-
-const single = (art) => ({ sway: random(5.4, 7.8), art });
+const GUST_COUNT = 5;
+const TIER_ORDER = ['filler', 'big', 'medium', 'small', 'tiny'];
 
 export function buildBouquet(host) {
+    // Every plant follows one of a few gusts of wind. A gust owns one layer of stems,
+    // beneath everything, and one layer of heads per tier, so a stem can never cross
+    // a flower and still sways exactly with its own head.
+    const gusts = Array.from({ length: GUST_COUNT }, (_, i) => ({
+        sway: random(5.6, 8.2),
+        delay: round(-i * 1.7),
+        stems: '',
+        heads: {},
+    }));
+    const plant = (tier, gust, stemArt, headArt) => {
+        const g = gusts[gust % GUST_COUNT];
+        g.stems += stemArt;
+        g.heads[tier] = (g.heads[tier] || '') + headArt;
+    };
+
+    const placed = [];
+    const addBloom = (tier, gust, slot, kind, color, stemWidth) => {
+        const x = Math.round(slot.x + random(-2, 2));
+        const y = Math.round(slot.y + random(-2, 2));
+        const size = slot.size * (KIND_SCALE[kind] || 1);
+        const turn = kind === 'tulip' ? tipAngle({ x, y }) : Math.round(random(-30, 30));
+        plant(tier, gust, stem(x, y, stemWidth), `<g transform="translate(${x} ${y}) rotate(${turn})">${DRAW[kind](size, color)}</g>`);
+        placed.push({
+            tier,
+            x,
+            y,
+            size,
+            color: PALETTES[color].base,
+            left: x / VIEW.width,
+            top: (y - VIEW.top) / VIEW.height,
+        });
+    };
+
     const sprigKinds = shuffled([...SPRIG_KINDS, ...SPRIG_KINDS]);
-    const fillers = grouped(SPRIG_SLOTS.map((slot, i) => stem(slot.x, slot.y, 1.2, slot.lift) + SPRIG_ART[sprigKinds[i]](slot)), 4);
+    SPRIG_SLOTS.forEach((slot, i) => {
+        plant('filler', i, stem(slot.x, slot.y, 1.2, slot.lift), SPRIG_ART[sprigKinds[i]](slot));
+    });
 
     const kinds = pickKinds(BLOOM_SLOTS);
-    const colors = pickColors(BLOOM_SLOTS.length);
-    const blooms = BLOOM_SLOTS.map((slot, i) => single(drawBloom(slot, kinds[i], colors[i], 2.4)));
+    const colors = pickColors(BLOOM_SLOTS.length, 2);
+    BLOOM_SLOTS.forEach((slot, i) => addBloom('big', i, slot, kinds[i], colors[i], 2.4));
 
     const mediumKinds = shuffled(MEDIUM_KINDS);
     const mediumColors = pickColors(MEDIUM_SLOTS.length, 2);
-    const medium = MEDIUM_SLOTS.map((slot, i) => ({ front: slot.front, art: drawBloom(slot, mediumKinds[i], mediumColors[i], 1.8) }));
+    MEDIUM_SLOTS.forEach((slot, i) => addBloom('medium', i + 2, slot, mediumKinds[i], mediumColors[i], 1.8));
 
     const smallKinds = shuffled(SMALL_KINDS);
     const smallColors = pickColors(SMALL_SLOTS.length);
-    const small = SMALL_SLOTS.map((slot, i) => ({ front: slot.front, art: drawBloom(slot, smallKinds[i % smallKinds.length], smallColors[i], 1.3) }));
+    SMALL_SLOTS.forEach((slot, i) => addBloom('small', i * 2, slot, smallKinds[i % smallKinds.length], smallColors[i], 1.3));
 
-    const tinyColors = pickColors(TINY_SLOTS.length, 4);
-    // Tiny flowers sit on top, but their stems stay behind the main blooms. Each
-    // stem layer pairs with a flower layer, so the two sway together.
-    const tinySlots = TINY_SLOTS.map((slot) => ({ x: Math.round(slot.x + random(-4, 4)), y: Math.round(slot.y + random(-4, 4)), size: random(8, 12) }));
-    const tinyStems = grouped(tinySlots.map((slot) => stem(slot.x, slot.y, 0.9)), 2);
-    const tinyHeads = grouped(tinySlots.map((slot, i) => `<g transform="translate(${slot.x} ${slot.y}) rotate(${Math.round(random(-30, 30))})">${DRAW.blossom(slot.size, tinyColors[i])}</g>`), 2);
-    tinyStems.forEach((layer, i) => {
-        layer.delay = -3.7 * (i + 1);
-        tinyHeads[i].sway = layer.sway;
-        tinyHeads[i].delay = layer.delay;
-    });
+    const tinyColors = pickColors(TINY_SLOTS.length, 3);
+    TINY_SLOTS.forEach((slot, i) => addBloom('tiny', i * 2 + 1, { ...slot, size: random(7, 9) }, 'blossom', tinyColors[i], 0.9));
 
-    const behind = (list) => list.filter((f) => !f.front);
-    const ahead = (list) => list.filter((f) => f.front);
     const flowers = [
-        ...fillers,
-        ...tinyStems,
-        ...grouped(behind(small).map((f) => f.art), 2),
-        ...behind(medium).map((f) => single(f.art)),
-        ...blooms,
-        ...ahead(medium).map((f) => single(f.art)),
-        ...ahead(small).map((f) => single(f.art)),
-        ...tinyHeads,
+        ...gusts.map((g) => ({ ...g, art: g.stems })),
+        ...TIER_ORDER.flatMap((tier) => gusts.filter((g) => g.heads[tier]).map((g) => ({ ...g, art: g.heads[tier] }))),
     ];
 
     host.innerHTML = `${paintDefs()}
@@ -448,6 +449,8 @@ export function buildBouquet(host) {
     // Timing goes through CSSOM so the Content-Security-Policy can forbid inline styles.
     host.querySelectorAll('.flower').forEach((el, i) => {
         el.style.animationDuration = `${flowers[i].sway}s`;
-        el.style.animationDelay = `${flowers[i].delay ?? round(-i * 0.9)}s`;
+        el.style.animationDelay = `${flowers[i].delay}s`;
     });
+
+    return placed;
 }

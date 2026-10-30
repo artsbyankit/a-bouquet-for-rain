@@ -65,6 +65,40 @@ function ambientItem(size) {
     return shape(HEART, '0 0 24 24', size, size, pick(HEART_COLORS), 'drift');
 }
 
+/* Now and then the breeze takes a petal off a flower. It falls from that exact
+   flower, in that flower's color, and drifts the way the wind is blowing. */
+export function startPetalShed(host, placed) {
+    const blooms = placed.filter((b) => b.tier === 'big' || b.tier === 'medium');
+    let shedding = 0;
+    const shed = () => {
+        if (document.hidden || reducedMotion() || host.classList.contains('offscreen') || shedding >= 10) return;
+        const bloom = pick(blooms);
+        const size = between(7, 13);
+        const el = document.createElement('div');
+        el.className = 'shed';
+        el.append(shape(PETAL, '0 0 24 24', size, size, bloom.color, 'drift'));
+        const angle = Math.random() * Math.PI * 2;
+        const reach = bloom.size * 0.7 / 360;
+        el.style.left = `${(bloom.left + Math.cos(angle) * reach) * 100}%`;
+        el.style.top = `${(bloom.top + Math.sin(angle) * reach * 0.82) * 100}%`;
+        el.style.setProperty('--dx', `${between(-20, 120)}px`);
+        el.style.setProperty('--dy', `${between(260, 480)}px`);
+        el.style.setProperty('--spin', `${between(200, 620)}deg`);
+        el.style.animationDuration = `${between(6, 10)}s`;
+        shedding++;
+        el.addEventListener('animationend', () => {
+            el.remove();
+            shedding--;
+        }, { once: true });
+        host.append(el);
+    };
+    const tick = () => {
+        shed();
+        setTimeout(tick, between(1100, 2800));
+    };
+    setTimeout(tick, 2000);
+}
+
 export function startAmbientFall() {
     const tick = () => {
         drop(ambientItem(between(9, 18)), { duration: between(8, 14), delay: Math.random() * 2 });
